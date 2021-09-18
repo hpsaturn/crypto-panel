@@ -1,19 +1,17 @@
-  /*\
+/*
+ * Crypto Currency Monitor using ESP32 & E-Paper Display
+ * =====================================================
  * 
- * This is the code for the project
- * 
- * "Crypto Currency Monitor using ESP32 & E-Paper Display"
- * 
- * 
- * To watch the full tutorial video, just head on to our YouTube channel
- * 
+ * Original project for Arduino IDE: 
  * https://www.youtube.com/techiesms
+ * Author: techiesms
  * 
+ * PlatformIO improvement
+ * Author: @hpsaturn
  * 
- *         techiesms
- * explore | learn | share 
- * 
- * 
+ * Revision
+ * --------------------------------------------------------
+ * 0000 Exported credentials to globar vars on Pio project
  */
 
 #ifndef BOARD_HAS_PSRAM
@@ -64,22 +62,22 @@ const char *password = WIFI_PASS;
 void title() {
     cursor_x = 20;
     cursor_y = 50;
-    char *sym = "Symbol";
+    const char *sym = "Symbol";
     writeln((GFXfont *)&FiraSans, sym, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 290;
     cursor_y = 50;
-    char *prc = "Price";
+    const char *prc = "Price";
     writeln((GFXfont *)&FiraSans, prc, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 520;
     cursor_y = 50;
-    char *da = "Day(%)";
+    const char *da = "Day(%)";
     writeln((GFXfont *)&FiraSans, da, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 790;
     cursor_y = 50;
-    char *we = "Week(%)";
+    const char *we = "Week(%)";
     writeln((GFXfont *)&FiraSans, we, &cursor_x, &cursor_y, NULL);
 }
 
@@ -167,25 +165,15 @@ void renderCryptoCard(Crypto crypto) {
 }
 
 void connectToWifi() {
+    Serial.print("WiFi connecting..");
     WiFi.begin(ssid, password);
-    String dots[3] = {".", "..", "..."};
-    int numberOfDots = 1;
 
-    //tft.setTextColor(//tft_WHITE, //tft_BLACK);
     while (WiFi.status() != WL_CONNECTED) {
-        //tft.drawCentreString("Connecting to WiFi " + dots[numberOfDots - 1], 120, 120, 2);
-        Serial.println("Connecting to WiFi");
-        if (numberOfDots == 3) {
-            numberOfDots = 0;
-        } else {
-            numberOfDots++;
-        }
-
-        delay(300);
-        //tft.fillScreen(//tft_BLACK);
+        Serial.print(".");
+        delay(400);
     }
 
-    Serial.println("Connected!!!_______________");
+    Serial.println(" connected!!");
 }
 
 void espShallowSleep(int ms) {
@@ -197,12 +185,8 @@ void espShallowSleep(int ms) {
 }
 
 void setup() {
-    char buf[128];
-
     Serial.begin(115200);
-
     connectToWifi();
-
     // Correct the ADC reference voltage
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
@@ -216,16 +200,13 @@ void setup() {
     framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
     if (!framebuffer) {
         Serial.println("alloc memory failed !!!");
-        while (1)
-            ;
+        while (1);
     }
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
 
     epd_poweron();
     epd_clear();
-
     epd_poweroff();
-
     epd_poweron();
 }
 
@@ -238,5 +219,8 @@ void loop() {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
-    espShallowSleep(60000);
+    Serial.println("edp_power_off");
+    epd_poweroff();
+    espShallowSleep(30000);
+    epd_poweron();
 }

@@ -49,6 +49,7 @@ int getCryptoIndexById(String id) {
         if (cryptos[i].apiName == id)
             return i;
     }
+    return 0;
 }
 
 void downloadBtcAndEthPrice() {
