@@ -36,15 +36,26 @@
 #include "firasans.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "hal.h"
 
-#define BATT_PIN 36
-#define SD_MISO 12
-#define SD_MOSI 13
-#define SD_SCLK 14
-#define SD_CS 15
+// ----------------------------
+// Configurations 
+// ----------------------------
 
-#define DEEP_SLEEP_DURATION 120  // sleep x seconds and then wake up
+// power consumption settings
+#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
 #define MAX_REFRESH_COUNT 30    // boot counts to complete clean screen
+
+// WiFi credentials (see platformio.ini)
+const char *ssid = WIFI_SSID;
+const char *password = WIFI_PASS;
+
+// default currency
+const char *currency_base = "eur";
+
+// ----------------------------
+// End of area you need to change
+// ----------------------------
 
 int cursor_x;
 int cursor_y;
@@ -54,17 +65,6 @@ int vref = 1100;
 Preferences preferences;
 const char* app_name = "crypto_currency";
 const char* key_boot_count = "key_boot_count";
-
-// ----------------------------
-// Configurations - Update these
-// ----------------------------
-
-const char *ssid = WIFI_SSID;
-const char *password = WIFI_PASS;
-
-// ----------------------------
-// End of area you need to change
-// ----------------------------
 
 void title() {
     cursor_x = 20;
@@ -237,7 +237,7 @@ void setup() {
 }
 
 void loop() {
-    downloadBaseData("eur");
+    downloadBaseData(currency_base);
     delay(1000);
     downloadBtcAndEthPrice();
     title();
@@ -246,10 +246,7 @@ void loop() {
         renderCryptoCard(cryptos[i]);
     }
     Serial.println("edp_power_off");
-
     epd_poweroff_all();
-
-    // esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
     esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
     esp_deep_sleep_start();
 }

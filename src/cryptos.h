@@ -24,7 +24,6 @@ Crypto cryptos[] = {
     {"bitcoin"},
     {"ethereum"},
     {"cardano"},
-    {"tether"},
  };
 
 int cryptosCount = (sizeof(cryptos) / sizeof(cryptos[0]));
