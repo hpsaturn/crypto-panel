@@ -26,6 +26,7 @@
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 #include <Wire.h>
+#include <Preferences.h>
 #include <esp_task_wdt.h>
 
 #include "cryptos.h"
@@ -42,11 +43,17 @@
 #define SD_SCLK 14
 #define SD_CS 15
 
+#define DEEP_SLEEP_DURATION 120  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 30    // boot counts to complete clean screen
+
 int cursor_x;
 int cursor_y;
 
 uint8_t *framebuffer;
 int vref = 1100;
+Preferences preferences;
+const char* app_name = "crypto_currency";
+const char* key_boot_count = "key_boot_count";
 
 // ----------------------------
 // Configurations - Update these
@@ -176,6 +183,19 @@ void connectToWifi() {
     Serial.println(" connected!!");
 }
 
+void setInt(String key, int value){
+    preferences.begin(app_name, false);
+    preferences.putInt(key.c_str(), value);
+    preferences.end();
+}
+
+int32_t getInt(String key, int defaultValue){
+    preferences.begin(app_name, false);
+    int32_t out = preferences.getInt(key.c_str(), defaultValue);
+    preferences.end();
+    return out;
+}
+
 void espShallowSleep(int ms) {
     // commented it for possible fix for issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/36
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
@@ -205,7 +225,13 @@ void setup() {
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
 
     epd_poweron();
-    epd_clear();
+
+    int boot_count = getInt(key_boot_count, 0);
+    Serial.printf("boot_count: %i\n",boot_count);
+    if (boot_count == 0) epd_clear();
+    if (boot_count++ > MAX_REFRESH_COUNT) setInt(key_boot_count, 0);
+    else setInt(key_boot_count, boot_count++);
+
     epd_poweroff();
     epd_poweron();
 }
@@ -220,7 +246,10 @@ void loop() {
         renderCryptoCard(cryptos[i]);
     }
     Serial.println("edp_power_off");
-    epd_poweroff();
-    espShallowSleep(30000);
-    epd_poweron();
+
+    epd_poweroff_all();
+
+    // esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
+    esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
+    esp_deep_sleep_start();
 }
