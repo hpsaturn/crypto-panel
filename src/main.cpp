@@ -37,14 +37,15 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "hal.h"
+#include "rom/rtc.h"
 
 // ----------------------------
 // Configurations 
 // ----------------------------
 
 // power consumption settings
-#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 30    // boot counts to complete clean screen
+#define DEEP_SLEEP_DURATION 30  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 3    // boot counts to complete clean screen
 
 // WiFi credentials (see platformio.ini)
 const char *ssid = WIFI_SSID;
@@ -86,6 +87,21 @@ void title() {
     cursor_y = 50;
     const char *we = "Week(%)";
     writeln((GFXfont *)&FiraSans, we, &cursor_x, &cursor_y, NULL);
+}
+
+String calcBatteryLevel() {
+    uint16_t v = analogRead(BATT_PIN);
+    float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
+    String voltage = String(battery_voltage) + "v";
+    Serial.println(voltage);
+    return voltage;
+}
+
+void status() {
+    cursor_x = 20;
+    cursor_y = 500;
+    const char *bat = "BAT: ";
+    writeln((GFXfont *)&FiraSans, bat, &cursor_x, &cursor_y, NULL);
 }
 
 String formatPercentageChange(double change) {
@@ -171,6 +187,21 @@ void renderCryptoCard(Crypto crypto) {
     writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
 }
 
+void renderStatus() {
+    cursor_x = 110;
+    cursor_y = 500;
+
+    Rect_t area = {
+        .x = cursor_x,
+        .y = cursor_y - 40,
+        .width = 150,
+        .height = 50,
+    };
+
+    epd_clear_area(area);
+    writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
+}
+
 void connectToWifi() {
     Serial.print("WiFi connecting..");
     WiFi.begin(ssid, password);
@@ -226,8 +257,13 @@ void setup() {
 
     epd_poweron();
 
+    int reset_reason = rtc_get_reset_reason(0);
+    Serial.printf("reset_reason: %i\n",reset_reason);
+    if(reset_reason == 1 ) epd_clear();
+
     int boot_count = getInt(key_boot_count, 0);
     Serial.printf("boot_count: %i\n",boot_count);
+
     if (boot_count == 0) epd_clear();
     if (boot_count++ > MAX_REFRESH_COUNT) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
@@ -245,6 +281,8 @@ void loop() {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
+    status();
+    renderStatus();
     Serial.println("edp_power_off");
     epd_poweroff_all();
     esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
