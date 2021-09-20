@@ -44,8 +44,8 @@
 // ----------------------------
 
 // power consumption settings
-#define DEEP_SLEEP_DURATION 30  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 3    // boot counts to complete clean screen
+#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 20     // boot counts to complete clean screen
 
 // WiFi credentials (see platformio.ini)
 const char *ssid = WIFI_SSID;
@@ -106,10 +106,7 @@ void status() {
 
 String formatPercentageChange(double change) {
     double absChange = change;
-
-    if (change < 0) {
-        absChange = -change;
-    }
+    if (change < 0) absChange = -change;
 
     if (absChange > 100) {
         return String(absChange, 0) + "%";
@@ -238,6 +235,7 @@ void espShallowSleep(int ms) {
 void setup() {
     Serial.begin(115200);
     connectToWifi();
+
     // Correct the ADC reference voltage
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
