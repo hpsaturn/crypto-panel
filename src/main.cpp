@@ -254,7 +254,9 @@ void eInkTask(void* pvParameters) {
     epd_poweron();   
     Serial.println("-->[eINK] Drawing static GUI..");
     title();
+    setupBattery(); 
     status();
+    renderStatus();
     vTaskDelete(NULL);
 }
 
@@ -274,7 +276,6 @@ void setup() {
     Serial.begin(115200);
     setupGUITask();
     wifiInit();
-    setupBattery(); 
 }
 
 void loop() {
@@ -286,7 +287,6 @@ void loop() {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
-    renderStatus();
     Serial.print("-->[eINK] shutdown..");
     epd_poweroff_all();
     esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
