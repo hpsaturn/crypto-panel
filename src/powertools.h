@@ -1,14 +1,10 @@
 #include "esp_adc_cal.h"
 
-// power consumption settings
-#define DEEP_SLEEP_DURATION 60  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
-
 int vref = 1100;
 
 void suspendDevice() {
     Serial.println("-->[eINK] shutdown..");
-    esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
+    esp_sleep_enable_timer_wakeup(1000000LL * atoi(DEEP_SLEEP_TIME));
     esp_deep_sleep_start();
 }
 
@@ -16,7 +12,7 @@ void espShallowSleep(int ms) {
     // commented it for possible fix for issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/36
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
     esp_sleep_enable_timer_wakeup(ms * 1000);
-    delay(200);
+    delay(100);
     esp_light_sleep_start();
 }
 

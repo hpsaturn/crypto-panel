@@ -176,7 +176,7 @@ void eInkTask(void* pvParameters) {
     if(devmod) Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
 
     if (boot_count == 0) epd_clear();
-    if (boot_count++ > MAX_REFRESH_COUNT) setInt(key_boot_count, 0);
+    if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
 
     // epd_poweroff();
