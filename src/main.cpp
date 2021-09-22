@@ -23,7 +23,7 @@
 #include <HTTPClient.h>
 #include <SD.h>
 #include <SPI.h>
-#include <WiFi.h>
+#include <wifi.hpp>
 #include <WiFiClientSecure.h>
 #include <Wire.h>
 #include <Preferences.h>
@@ -45,11 +45,7 @@
 
 // power consumption settings
 #define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 20     // boot counts to complete clean screen
-
-// WiFi credentials (see platformio.ini)
-const char *ssid = WIFI_SSID;
-const char *password = WIFI_PASS;
+#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
 
 // default currency
 const char *currency_base = "eur";
@@ -199,18 +195,6 @@ void renderStatus() {
     writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
 }
 
-void connectToWifi() {
-    Serial.print("WiFi connecting..");
-    WiFi.begin(ssid, password);
-
-    while (WiFi.status() != WL_CONNECTED) {
-        Serial.print(".");
-        delay(400);
-    }
-
-    Serial.println(" connected!!");
-}
-
 void setInt(String key, int value){
     preferences.begin(app_name, false);
     preferences.putInt(key.c_str(), value);
@@ -234,7 +218,8 @@ void espShallowSleep(int ms) {
 
 void setup() {
     Serial.begin(115200);
-    connectToWifi();
+
+    wifiInit();
 
     // Correct the ADC reference voltage
     esp_adc_cal_characteristics_t adc_chars;
