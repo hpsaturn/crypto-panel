@@ -1,3 +1,5 @@
+#include <Preferences.h>
+
 Preferences preferences;
 const char* app_name = "crypto_currency";
 const char* key_boot_count = "key_boot_count";

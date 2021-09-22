@@ -28,7 +28,6 @@
 #include <wifi.hpp>
 #include <WiFiClientSecure.h>
 #include <Wire.h>
-#include <Preferences.h>
 #include "cryptos.h"
 #include "coingecko-api.h"
 #include "hal.h"

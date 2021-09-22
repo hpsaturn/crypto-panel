@@ -5,7 +5,6 @@ const char *ssid = WIFI_SSID;
 const char *password = WIFI_PASS;
 
 int rssi = 0;
-String hostId = "";
 
 /******************************************************************************
 *   W I F I   M E T H O D S
