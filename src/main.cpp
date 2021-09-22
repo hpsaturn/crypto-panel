@@ -44,11 +44,14 @@
 // ----------------------------
 
 // power consumption settings
-#define DEEP_SLEEP_DURATION 30  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 3     // boot counts to complete clean screen
+#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
 
 // default currency
 const char *currency_base = "eur";
+
+// extra debug msgs
+bool devmod = false;
 
 // ----------------------------
 // End of area you need to change
@@ -89,7 +92,7 @@ String calcBatteryLevel() {
     uint16_t v = analogRead(BATT_PIN);
     float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
     String voltage = String(battery_voltage) + "v";
-    Serial.printf("-->[BATT] voltage: %s\n",voltage.c_str());
+    Serial.printf("-->[BATT] %s\n",voltage.c_str());
     return voltage;
 }
 
@@ -114,8 +117,7 @@ String formatPercentageChange(double change) {
 }
 
 void renderCryptoCard(Crypto crypto) {
-    Serial.print("-->[eINK] Crypto Name  - ");
-    Serial.println(crypto.symbol);
+    if(devmod) Serial.printf("-->[eINK] Crypto Name  - %s\n",crypto.symbol.c_str());
 
     cursor_x = 50;
 
@@ -128,8 +130,7 @@ void renderCryptoCard(Crypto crypto) {
     String Str = (String)(crypto.price.inr);
     char *string2 = &Str[0];
 
-    Serial.print("-->[eINK] Price USD - ");
-    Serial.println(Str);
+    if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
 
     Rect_t area = {
         .x = cursor_x,
@@ -142,8 +143,7 @@ void renderCryptoCard(Crypto crypto) {
 
     writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
 
-    Serial.print("-->[eINK] Day change - ");
-    Serial.println(formatPercentageChange(crypto.dayChange));
+    if(devmod) Serial.printf("-->[eINK] Day change - %s\n",formatPercentageChange(crypto.dayChange).c_str());
 
     cursor_x = 530;
 
@@ -160,8 +160,7 @@ void renderCryptoCard(Crypto crypto) {
 
     writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
 
-    Serial.print("-->[eINK] Week change - ");
-    Serial.println(formatPercentageChange(crypto.weekChange));
+    if(devmod) Serial.printf("-->[eINK] Week change - %s\n",formatPercentageChange(crypto.weekChange).c_str());
 
     cursor_x = 800;
 
@@ -221,13 +220,13 @@ void setupBattery() {
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        Serial.printf("-->[BATT] eFuse Vref:%u mV\n", adc_chars.vref);
+        if(devmod) Serial.printf("-->[BATT] eFuse Vref:%u mV\n", adc_chars.vref);
         vref = adc_chars.vref;
     }
 }
 
 void updateData() {
-    Serial.println("-->[eINK] Rendering partial GUI..");
+    if(devmod) Serial.println("-->[eINK] Rendering partial GUI..");
     for (int i = 0; i < cryptosCount; i++) {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
@@ -248,11 +247,11 @@ void eInkTask(void* pvParameters) {
     epd_poweron();
 
     int reset_reason = rtc_get_reset_reason(0);
-    Serial.printf("-->[eINK] reset_reason: %i\n",reset_reason);
+    if(devmod) Serial.printf("-->[eINK] reset_reason: %i\n",reset_reason);
     if(reset_reason == 1 ) epd_clear();
 
     int boot_count = getInt(key_boot_count, 0);
-    Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
+    if(devmod) Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
 
     if (boot_count == 0) epd_clear();
     if (boot_count++ > MAX_REFRESH_COUNT) setInt(key_boot_count, 0);
@@ -260,7 +259,7 @@ void eInkTask(void* pvParameters) {
 
     epd_poweroff();
     epd_poweron();   
-    Serial.println("-->[eINK] Drawing static GUI..");
+    if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
     title();
     setupBattery(); 
     status();

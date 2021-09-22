@@ -74,7 +74,7 @@ bool downloadBtcAndEthPrice() {
         return false;
     }
 
-    Serial.println("-->[cAPI] Successfuly downloaded BTC and ETH data");
+    Serial.println("-->[cAPI] downloaded crypto data");
 
     StaticJsonDocument<512> filter;
 
@@ -103,7 +103,6 @@ bool downloadBtcAndEthPrice() {
     }
 
     stopClient();
-
     return true;
 }
 
@@ -125,7 +124,7 @@ bool downloadBaseData(String vsCurrency) {
         return false;
     }
 
-    Serial.println("-->[cAPI] Successfuly downloaded BASE data");
+    Serial.println("-->[cAPI] downloaded base data");
 
     StaticJsonDocument<512> filter;
 
