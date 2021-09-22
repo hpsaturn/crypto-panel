@@ -12,6 +12,8 @@
  * Revision
  * --------------------------------------------------------
  * 0000 Exported credentials to globar vars on Pio project
+ * 0001 Added status (battery) and some minors
+ * 0002 Added FreeRTOS task for static GUI and complete refactor
  */
 
 #ifndef BOARD_HAS_PSRAM
@@ -27,15 +29,13 @@
 #include <WiFiClientSecure.h>
 #include <Wire.h>
 #include <Preferences.h>
-#include <esp_task_wdt.h>
 #include "cryptos.h"
 #include "coingecko-api.h"
 #include "hal.h"
 #include "powertools.h"
+#include "settings.h"
 #include "epd_driver.h"
 #include "firasans.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 #include "rom/rtc.h"
 
 // ----------------------------
@@ -56,9 +56,6 @@ int cursor_x;
 int cursor_y;
 
 uint8_t *framebuffer;
-Preferences preferences;
-const char* app_name = "crypto_currency";
-const char* key_boot_count = "key_boot_count";
 
 void title() {
     cursor_x = 20;
@@ -178,19 +175,6 @@ void renderStatus() {
 
     epd_clear_area(area);
     writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
-}
-
-void setInt(String key, int value){
-    preferences.begin(app_name, false);
-    preferences.putInt(key.c_str(), value);
-    preferences.end();
-}
-
-int32_t getInt(String key, int defaultValue){
-    preferences.begin(app_name, false);
-    int32_t out = preferences.getInt(key.c_str(), defaultValue);
-    preferences.end();
-    return out;
 }
 
 void updateData() {
