@@ -28,24 +28,19 @@
 #include <Wire.h>
 #include <Preferences.h>
 #include <esp_task_wdt.h>
-
 #include "cryptos.h"
 #include "coingecko-api.h"
+#include "hal.h"
+#include "powertools.h"
 #include "epd_driver.h"
-#include "esp_adc_cal.h"
 #include "firasans.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "hal.h"
 #include "rom/rtc.h"
 
 // ----------------------------
 // Configurations 
 // ----------------------------
-
-// power consumption settings
-#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
 
 // default currency
 const char *currency_base = "eur";
@@ -61,7 +56,6 @@ int cursor_x;
 int cursor_y;
 
 uint8_t *framebuffer;
-int vref = 1100;
 Preferences preferences;
 const char* app_name = "crypto_currency";
 const char* key_boot_count = "key_boot_count";
@@ -86,14 +80,6 @@ void title() {
     cursor_y = 50;
     const char *we = "Week(%)";
     writeln((GFXfont *)&FiraSans, we, &cursor_x, &cursor_y, NULL);
-}
-
-String calcBatteryLevel() {
-    uint16_t v = analogRead(BATT_PIN);
-    float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    String voltage = String(battery_voltage) + "v";
-    Serial.printf("-->[BATT] %s\n",voltage.c_str());
-    return voltage;
 }
 
 void status() {
@@ -207,30 +193,13 @@ int32_t getInt(String key, int defaultValue){
     return out;
 }
 
-void espShallowSleep(int ms) {
-    // commented it for possible fix for issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/36
-    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
-    esp_sleep_enable_timer_wakeup(ms * 1000);
-    delay(200);
-    esp_light_sleep_start();
-}
-
-void setupBattery() {
-    // Correct the ADC reference voltage
-    esp_adc_cal_characteristics_t adc_chars;
-    esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-    if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        if(devmod) Serial.printf("-->[BATT] eFuse Vref:%u mV\n", adc_chars.vref);
-        vref = adc_chars.vref;
-    }
-}
-
 void updateData() {
     if(devmod) Serial.println("-->[eINK] Rendering partial GUI..");
     for (int i = 0; i < cryptosCount; i++) {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
+    renderStatus();
 }
 
 void eInkTask(void* pvParameters) {
@@ -238,10 +207,7 @@ void eInkTask(void* pvParameters) {
     epd_init();
 
     framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
-    if (!framebuffer) {
-        Serial.println("-->[eINK] alloc memory failed !!!");
-        while (1);
-    }
+    if (!framebuffer) Serial.println("-->[eINK] alloc memory failed !!!");
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
 
     epd_poweron();
@@ -257,13 +223,12 @@ void eInkTask(void* pvParameters) {
     if (boot_count++ > MAX_REFRESH_COUNT) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
 
-    epd_poweroff();
-    epd_poweron();   
+    // epd_poweroff();
+    // epd_poweron();   
     if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
     title();
     setupBattery(); 
     status();
-    renderStatus();
     vTaskDelete(NULL);
 }
 
@@ -286,17 +251,11 @@ bool downloadData() {
     return baseDataReady && cryptoDataReady;
 }
 
-void suspendDevice() {
-    Serial.println("-->[eINK] shutdown..");
-    epd_poweroff_all();
-    esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
-    esp_deep_sleep_start();
-}
-
 void setup() {
     Serial.begin(115200);
     setupGUITask();
     if (wifiInit() && downloadData()) updateData();
+    epd_poweroff_all();
     suspendDevice();
 }
 
