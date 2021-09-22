@@ -19,8 +19,7 @@ export PIO_WIFI_SSID='MyWifiSSID'
 ### Config:
 
 On `cryptos.h` choose your currencies.  
-On `main.cpp` choose the power consumption settings. Try to unchanged these settings maybe for power consumption and possible API usage ban.
-
+On `platformio.ini` you can change the power saving settings
 
 ## Build and Upload
 
