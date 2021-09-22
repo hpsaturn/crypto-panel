@@ -44,8 +44,8 @@
 // ----------------------------
 
 // power consumption settings
-#define DEEP_SLEEP_DURATION 30  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 2     // boot counts to complete clean screen
+#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
 
 // default currency
 const char *currency_base = "eur";
