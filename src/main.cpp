@@ -99,81 +99,53 @@ String formatPercentageChange(double change) {
     }
 }
 
+Rect_t getEdpArea(int x, int y,int w, int h) {
+    Rect_t area = {
+        .x = x,
+        .y = y,
+        .width = w,
+        .height = h,
+    };
+    return area;
+}
+
 void renderCryptoCard(Crypto crypto) {
     if(devmod) Serial.printf("-->[eINK] Crypto Name  - %s\n",crypto.symbol.c_str());
 
     cursor_x = 50;
-
     char *string1 = &crypto.symbol[0];
-
     writeln((GFXfont *)&FiraSans, string1, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 220;
-
     String Str = (String)(crypto.price.inr);
     char *string2 = &Str[0];
 
     if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
 
-    Rect_t area = {
-        .x = cursor_x,
-        .y = cursor_y - 40,
-        .width = 320,
-        .height = 50,
-    };
-
-    epd_clear_area(area);
-
+    epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 320, 50));
     writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Day change - %s\n",formatPercentageChange(crypto.dayChange).c_str());
 
     cursor_x = 530;
-
-    Rect_t area1 = {
-        .x = cursor_x,
-        .y = cursor_y - 40,
-        .width = 150,
-        .height = 50,
-    };
-
-    epd_clear_area(area1);
+    epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 150, 50));
     Str = (String)(crypto.dayChange);
     char *string3 = &Str[0];
-
     writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Week change - %s\n",formatPercentageChange(crypto.weekChange).c_str());
 
     cursor_x = 800;
-
-    Rect_t area2 = {
-        .x = cursor_x,
-        .y = cursor_y - 40,
-        .width = 150,
-        .height = 50,
-    };
-
-    epd_clear_area(area2);
-
+    epd_clear_area(getEdpArea(cursor_x, cursor_y - 40, 150, 50));
     Str = (String)(crypto.weekChange);
     char *string4 = &Str[0];
-
     writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
 }
 
 void renderStatus() {
     cursor_x = 110;
     cursor_y = 500;
-
-    Rect_t area = {
-        .x = cursor_x,
-        .y = cursor_y - 40,
-        .width = 150,
-        .height = 50,
-    };
-
-    epd_clear_area(area);
+    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,150,50));
     writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
 }
 
@@ -221,10 +193,10 @@ void setupGUITask() {
     xTaskCreatePinnedToCore(
         eInkTask,    /* Function to implement the task */
         "eInkTask ", /* Name of the task */
-        10000,        /* Stack size in words */
+        10000,       /* Stack size in words */
         NULL,        /* Task input parameter */
         1,           /* Priority of the task */
-        NULL,    /* Task handle. */
+        NULL,        /* Task handle. */
         1);          /* Core where the task should run */
 }
 
