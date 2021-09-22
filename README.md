@@ -2,9 +2,8 @@
 
 LilyGo EDP47 Crypto currency Tracker
 
-
+![preview](images/preview.gif)
 ## Prerequisites
-
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
