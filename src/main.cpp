@@ -44,8 +44,8 @@
 // ----------------------------
 
 // power consumption settings
-#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
+#define DEEP_SLEEP_DURATION 30  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 2     // boot counts to complete clean screen
 
 // default currency
 const char *currency_base = "eur";
@@ -89,7 +89,7 @@ String calcBatteryLevel() {
     uint16_t v = analogRead(BATT_PIN);
     float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
     String voltage = String(battery_voltage) + "v";
-    Serial.println(voltage);
+    Serial.printf("-->[BATT] voltage: %s\n",voltage.c_str());
     return voltage;
 }
 
@@ -114,7 +114,7 @@ String formatPercentageChange(double change) {
 }
 
 void renderCryptoCard(Crypto crypto) {
-    Serial.print("Crypto Name  - ");
+    Serial.print("-->[eINK] Crypto Name  - ");
     Serial.println(crypto.symbol);
 
     cursor_x = 50;
@@ -128,7 +128,7 @@ void renderCryptoCard(Crypto crypto) {
     String Str = (String)(crypto.price.inr);
     char *string2 = &Str[0];
 
-    Serial.print("price usd - ");
+    Serial.print("-->[eINK] Price USD - ");
     Serial.println(Str);
 
     Rect_t area = {
@@ -142,7 +142,7 @@ void renderCryptoCard(Crypto crypto) {
 
     writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
 
-    Serial.print("Day change - ");
+    Serial.print("-->[eINK] Day change - ");
     Serial.println(formatPercentageChange(crypto.dayChange));
 
     cursor_x = 530;
@@ -160,7 +160,7 @@ void renderCryptoCard(Crypto crypto) {
 
     writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
 
-    Serial.print("Week change - ");
+    Serial.print("-->[eINK] Week change - ");
     Serial.println(formatPercentageChange(crypto.weekChange));
 
     cursor_x = 800;
@@ -216,24 +216,23 @@ void espShallowSleep(int ms) {
     esp_light_sleep_start();
 }
 
-void setup() {
-    Serial.begin(115200);
-
-    wifiInit();
-
+void setupBattery() {
     // Correct the ADC reference voltage
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        Serial.printf("eFuse Vref:%u mV\n", adc_chars.vref);
+        Serial.printf("-->[BATT] eFuse Vref:%u mV\n", adc_chars.vref);
         vref = adc_chars.vref;
     }
+}
 
+void eInkTask(void* pvParameters) {
+    
     epd_init();
 
     framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
     if (!framebuffer) {
-        Serial.println("alloc memory failed !!!");
+        Serial.println("-->[eINK] alloc memory failed !!!");
         while (1);
     }
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
@@ -241,33 +240,56 @@ void setup() {
     epd_poweron();
 
     int reset_reason = rtc_get_reset_reason(0);
-    Serial.printf("reset_reason: %i\n",reset_reason);
+    Serial.printf("-->[eINK] reset_reason: %i\n",reset_reason);
     if(reset_reason == 1 ) epd_clear();
 
     int boot_count = getInt(key_boot_count, 0);
-    Serial.printf("boot_count: %i\n",boot_count);
+    Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
 
     if (boot_count == 0) epd_clear();
     if (boot_count++ > MAX_REFRESH_COUNT) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
 
     epd_poweroff();
-    epd_poweron();
+    epd_poweron();   
+    Serial.println("-->[eINK] Drawing static GUI..");
+    title();
+    status();
+    vTaskDelete(NULL);
+}
+
+void setupGUITask() {
+    Serial.println("-->[eINK] Starting eINK Task..");
+    xTaskCreatePinnedToCore(
+        eInkTask,    /* Function to implement the task */
+        "eInkTask ", /* Name of the task */
+        10000,        /* Stack size in words */
+        NULL,        /* Task input parameter */
+        1,           /* Priority of the task */
+        NULL,    /* Task handle. */
+        1);          /* Core where the task should run */
+}
+
+void setup() {
+    Serial.begin(115200);
+    setupGUITask();
+    wifiInit();
+    setupBattery(); 
 }
 
 void loop() {
     downloadBaseData(currency_base);
-    delay(1000);
+    delay(100);
     downloadBtcAndEthPrice();
-    title();
+    Serial.println("-->[eINK] Rendering partial GUI..");
     for (int i = 0; i < cryptosCount; i++) {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
-    status();
     renderStatus();
-    Serial.println("edp_power_off");
+    Serial.print("-->[eINK] shutdown..");
     epd_poweroff_all();
     esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
     esp_deep_sleep_start();
+    Serial.print("done");
 }

@@ -64,12 +64,11 @@ void downloadBtcAndEthPrice() {
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
-        Serial.println("Error connecting to API while downloading BTC and ETH data");
-        Serial.println(code);
+        Serial.printf("-->[cAPI] Error connecting to API while downloading BTC and ETH data. code: %i\n",code);
         return;
     }
 
-    Serial.println("Successfuly downloaded BTC and ETH data");
+    Serial.println("-->[cAPI] Successfuly downloaded BTC and ETH data");
 
     StaticJsonDocument<512> filter;
 
@@ -82,7 +81,7 @@ void downloadBtcAndEthPrice() {
     DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
 
     if (error) {
-        Serial.print(F("deserializeJson() failed: "));
+        Serial.print(F("-->[cAPI] deserializeJson() failed: "));
         Serial.println(error.f_str());
     }
 
@@ -112,12 +111,11 @@ void downloadBaseData(String vsCurrency) {
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
-        Serial.println("Error connecting to API while downloading base data");
-        Serial.println(code);
+        Serial.printf("-->[cAPI] Error connecting to API while downloading base data. code: %i\n",code);
         return;
     }
 
-    Serial.println("Successfuly downloaded BASE data");
+    Serial.println("-->[cAPI] Successfuly downloaded BASE data");
 
     StaticJsonDocument<512> filter;
 
@@ -133,7 +131,7 @@ void downloadBaseData(String vsCurrency) {
     DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
 
     if (error) {
-        Serial.print(F("deserializeJson() failed: "));
+        Serial.print(F("-->[cAPI] deserializeJson() failed: "));
         Serial.println(error.f_str());
     }
 

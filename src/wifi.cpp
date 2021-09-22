@@ -12,21 +12,18 @@ String hostId = "";
 ******************************************************************************/
 
 void wifiConnect(const char* ssid, const char* pass) {
-    Serial.print("-->[WIFI] connecting to ");
-    Serial.print(ssid);
+    Serial.printf("-->[WIFI] connecting to %s\n",ssid);
     int wifi_retry = 0;
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
-        Serial.print(".");
         delay(200);  // increment this delay on possible reconnect issues
     }
-    delay(500);
+    delay(100);
     if (WiFi.isConnected()) {
-        Serial.println(" done.");
         Serial.print("-->[WIFI] IP: ");
         Serial.println(WiFi.localIP());
     } else {
-        Serial.println("fail!\n-->[E][WIFI] disconnected!");
+        Serial.println("-->[WIFI] disconnected!");
     }
 }
 
