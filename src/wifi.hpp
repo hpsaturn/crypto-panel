@@ -6,7 +6,7 @@
 #define IFX_RETRY_CONNECTION 5    // influxdb publish retry 
 
 bool wifiCheck();
-void wifiInit();
+bool wifiInit();
 void wifiStop();
 void wifiRestart();
 int  getWifiRSSI();

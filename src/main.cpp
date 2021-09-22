@@ -44,8 +44,8 @@
 // ----------------------------
 
 // power consumption settings
-#define DEEP_SLEEP_DURATION 300  // sleep x seconds and then wake up
-#define MAX_REFRESH_COUNT 30     // boot counts to complete clean screen
+#define DEEP_SLEEP_DURATION 30  // sleep x seconds and then wake up
+#define MAX_REFRESH_COUNT 3     // boot counts to complete clean screen
 
 // default currency
 const char *currency_base = "eur";
@@ -226,6 +226,14 @@ void setupBattery() {
     }
 }
 
+void updateData() {
+    Serial.println("-->[eINK] Rendering partial GUI..");
+    for (int i = 0; i < cryptosCount; i++) {
+        cursor_y = (50 * (i + 3));
+        renderCryptoCard(cryptos[i]);
+    }
+}
+
 void eInkTask(void* pvParameters) {
     
     epd_init();
@@ -272,24 +280,26 @@ void setupGUITask() {
         1);          /* Core where the task should run */
 }
 
-void setup() {
-    Serial.begin(115200);
-    setupGUITask();
-    wifiInit();
+bool downloadData() {
+    bool baseDataReady = downloadBaseData(currency_base);
+    delay(100);
+    bool cryptoDataReady = downloadBtcAndEthPrice();
+    return baseDataReady && cryptoDataReady;
 }
 
-void loop() {
-    downloadBaseData(currency_base);
-    delay(100);
-    downloadBtcAndEthPrice();
-    Serial.println("-->[eINK] Rendering partial GUI..");
-    for (int i = 0; i < cryptosCount; i++) {
-        cursor_y = (50 * (i + 3));
-        renderCryptoCard(cryptos[i]);
-    }
-    Serial.print("-->[eINK] shutdown..");
+void suspendDevice() {
+    Serial.println("-->[eINK] shutdown..");
     epd_poweroff_all();
     esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_DURATION);
     esp_deep_sleep_start();
-    Serial.print("done");
 }
+
+void setup() {
+    Serial.begin(115200);
+    setupGUITask();
+    if (wifiInit() && downloadData()) updateData();
+    suspendDevice();
+}
+
+void loop() {}
+

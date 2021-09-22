@@ -52,7 +52,12 @@ int getCryptoIndexById(String id) {
     return 0;
 }
 
-void downloadBtcAndEthPrice() {
+void stopClient() {
+    http.end();
+    client.stop();
+}
+
+bool downloadBtcAndEthPrice() {
     //client.setFingerprint(coingeckoSslFingerprint);
     http.useHTTP10(true);
     client.setCACert(rootCACertificate);
@@ -65,7 +70,8 @@ void downloadBtcAndEthPrice() {
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
         Serial.printf("-->[cAPI] Error connecting to API while downloading BTC and ETH data. code: %i\n",code);
-        return;
+        stopClient();
+        return false;
     }
 
     Serial.println("-->[cAPI] Successfuly downloaded BTC and ETH data");
@@ -83,6 +89,8 @@ void downloadBtcAndEthPrice() {
     if (error) {
         Serial.print(F("-->[cAPI] deserializeJson() failed: "));
         Serial.println(error.f_str());
+        stopClient();
+        return false;
     }
 
     for (int i = 0; i < cryptosCount; i++) {
@@ -94,11 +102,12 @@ void downloadBtcAndEthPrice() {
         cryptos[i].price.eth = ethPrice;
     }
 
-    http.end();
-    client.stop();
+    stopClient();
+
+    return true;
 }
 
-void downloadBaseData(String vsCurrency) {
+bool downloadBaseData(String vsCurrency) {
     http.useHTTP10(true);
     client.setCACert(rootCACertificate);
     //client.setFingerprint(coingeckoSslFingerprint);
@@ -112,7 +121,8 @@ void downloadBaseData(String vsCurrency) {
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
         Serial.printf("-->[cAPI] Error connecting to API while downloading base data. code: %i\n",code);
-        return;
+        stopClient();
+        return false;
     }
 
     Serial.println("-->[cAPI] Successfuly downloaded BASE data");
@@ -133,6 +143,8 @@ void downloadBaseData(String vsCurrency) {
     if (error) {
         Serial.print(F("-->[cAPI] deserializeJson() failed: "));
         Serial.println(error.f_str());
+        stopClient();
+        return false;
     }
 
     for (int i = 0; i < cryptosCount; i++) {
@@ -153,6 +165,6 @@ void downloadBaseData(String vsCurrency) {
         cryptos[cryptoIndex].weekChange = weekChange;
     }
 
-    http.end();
-    client.stop();
+    stopClient();
+    return true;
 }

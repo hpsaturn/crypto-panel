@@ -11,7 +11,7 @@ String hostId = "";
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
-void wifiConnect(const char* ssid, const char* pass) {
+bool wifiConnect(const char* ssid, const char* pass) {
     Serial.printf("-->[WIFI] connecting to %s\n",ssid);
     int wifi_retry = 0;
     WiFi.begin(ssid, pass);
@@ -22,13 +22,15 @@ void wifiConnect(const char* ssid, const char* pass) {
     if (WiFi.isConnected()) {
         Serial.print("-->[WIFI] IP: ");
         Serial.println(WiFi.localIP());
+        return true;
     } else {
         Serial.println("-->[WIFI] disconnected!");
+        return false;
     }
 }
 
-void wifiInit() {
-    wifiConnect(WIFI_SSID,WIFI_PASS);
+bool wifiInit() {
+    return wifiConnect(WIFI_SSID,WIFI_PASS);
 }
 
 void wifiStop() {
