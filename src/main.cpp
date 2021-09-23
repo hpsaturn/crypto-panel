@@ -185,31 +185,36 @@ void updateData() {
     clearStatusMsg();
 }
 
-void eInkTask(void* pvParameters) {
-    
+void eInkInit() {
     epd_init();
-
     framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
     if (!framebuffer) Serial.println("-->[eINK] alloc memory failed !!!");
     memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
-
     epd_poweron();
+}
+
+void eInkClear() {
+    epd_clear();
+    epd_poweroff();  // Do we need that?
+    epd_poweron();
+}
+
+void eInkTask(void* pvParameters) {
+
+    eInkInit();
+    
+    int boot_count = getInt(key_boot_count, 0);
+    Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
 
     int reset_reason = rtc_get_reset_reason(0);
     if(devmod) Serial.printf("-->[eINK] reset_reason: %i\n",reset_reason);
-    if(reset_reason == 1 ) epd_clear();
 
-    int boot_count = getInt(key_boot_count, 0);
-    if(devmod) Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
-
-    if (boot_count == 0) epd_clear();
+    if (boot_count == 0 || reset_reason == 1) eInkClear();
     if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
 
-    // epd_poweroff();    // Do we need that?
-    // epd_poweron();  
-
     if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
+
     title();
     setupBattery(); 
     status();
