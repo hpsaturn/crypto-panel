@@ -91,7 +91,7 @@ void status() {
 }
 
 void renderBatteryStatus() {
-    cursor_x = 90;
+    cursor_x = 94;
     drawString(cursor_x,STATUSY,calcBatteryLevel(),LEFT);
 }
 
@@ -173,10 +173,11 @@ void eInkTask(void* pvParameters) {
     else setInt(key_boot_count, boot_count++);
 
     if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
-
-    title();
+    if (boot_count == 0 || reset_reason == 1) {
+        title();
+        status();
+    }
     setupBattery(); 
-    status();
     renderBatteryStatus();
     renderStatusMsg("Downloading Crypto data..");
     epd_update();
