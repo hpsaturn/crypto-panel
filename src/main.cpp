@@ -37,16 +37,7 @@
 #include "epd_driver.h"
 #include "epd_highlevel.h"
 #include "rom/rtc.h"
-// font
-#include "opensans8b.h"
-#include "opensans9b.h"
-#include "opensans24b.h"
-#include "Firasans.h"
-
-#define WAVEFORM EPD_BUILTIN_WAVEFORM
-
 #include "eInkHandler.h"
-
 
 // ----------------------------
 // Configurations 
@@ -55,25 +46,17 @@
 // default currency
 const char *currency_base = "eur";
 
-// extra debug msgs
-bool devmod = (bool)CORE_DEBUG_LEVEL;
-
 // ----------------------------
 // End of area you need to change
 // ----------------------------
 
+// extra debug msgs
+bool devmod = (bool)CORE_DEBUG_LEVEL;
+
 #define MAX_RETRY 2     // max retry download
 int retry;              // retry count
 
-int cursor_x;
-int cursor_y;
-
 uint8_t *framebuffer;
-
-#define STATUSX 230
-#define STATUSY 510
-#define STATUSW 620
-#define STATUSC 29
 
 void title() {
     cursor_x = 20;
@@ -99,14 +82,17 @@ void title() {
 
 void status() {
     cursor_x = 20;
-    cursor_y = STATUSY;
     String bat = "BAT: ";
-    drawString(cursor_x, cursor_y, bat, LEFT);
+    drawString(cursor_x, STATUSY, bat, LEFT);
 
-    cursor_x = 860;
-    cursor_y = STATUSY;
+    cursor_x = 920;
     String rev = "r0" + String(REVISION);
-    drawString(cursor_x, cursor_y, rev, RIGHT);
+    drawString(cursor_x, STATUSY, rev, RIGHT);
+}
+
+void renderBatteryStatus() {
+    cursor_x = 90;
+    drawString(cursor_x,STATUSY,calcBatteryLevel(),LEFT);
 }
 
 String formatPercentageChange(double change) {
@@ -120,16 +106,6 @@ String formatPercentageChange(double change) {
     } else {
         return String(absChange) + "%";
     }
-}
-
-EpdRect getEdpArea(int x, int y,int w, int h) {
-    EpdRect area = {
-        .x = x,
-        .y = y,
-        .width = w,
-        .height = h,
-    };
-    return area;
 }
 
 String getFormatCurrencyValue(double value){
@@ -152,14 +128,12 @@ void renderCryptoCard(Crypto crypto) {
 
     if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
 
-    epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 320, 50));
     drawString(cursor_x,cursor_y,String(string2),LEFT);
     // writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Day change - %s\n",formatPercentageChange(crypto.dayChange).c_str());
 
     cursor_x = 530;
-    epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 150, 50));
     Str = getFormatCurrencyValue(crypto.dayChange);
     char *string3 = &Str[0];
     drawString(cursor_x,cursor_y,String(string3),LEFT);
@@ -168,35 +142,11 @@ void renderCryptoCard(Crypto crypto) {
     if(devmod) Serial.printf("-->[eINK] Week change - %s\n",formatPercentageChange(crypto.weekChange).c_str());
 
     cursor_x = 800;
-    epd_clear_area(getEdpArea(cursor_x, cursor_y - 40, 150, 50));
     Str = getFormatCurrencyValue(crypto.weekChange);
     char *string4 = &Str[0];
     drawString(cursor_x,cursor_y,String(string4),LEFT);
     // writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
-}
-
-void renderBatteryStatus() {
-    cursor_x = 110;
-    cursor_y = STATUSY;
-    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,110,50));
-    drawString(cursor_x,cursor_y,calcBatteryLevel(),LEFT);
-    // writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
-}
-
-void clearStatusMsg(){
-    cursor_x = STATUSX;
-    cursor_y = STATUSY;
-    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,STATUSW,50));
-}
-
-void renderStatusMsg(String msg) {
-    if(msg.length() > STATUSC) msg = msg.substring(0,STATUSC-1)+"..";
-    cursor_x = STATUSX;
-    cursor_y = STATUSY;
-    clearStatusMsg();
-    cursor_x = cursor_x + ((STATUSW-((msg.length() * STATUSW) / STATUSC))/2);
-    drawString(cursor_x,cursor_y,msg,LEFT);
-    // writeln((GFXfont *)&FiraSans, msg.c_str(), &cursor_x, &cursor_y, NULL);
+    epd_update();
 }
 
 void updateData() {
@@ -207,8 +157,6 @@ void updateData() {
     }
     clearStatusMsg();
 }
-
-
 
 void eInkTask(void* pvParameters) {
 
@@ -231,6 +179,7 @@ void eInkTask(void* pvParameters) {
     status();
     renderBatteryStatus();
     renderStatusMsg("Downloading Crypto data..");
+    epd_update();
     vTaskDelete(NULL);
 }
 
