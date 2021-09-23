@@ -1,4 +1,7 @@
+#include "opensans8b.h"
+#include "opensans10b.h"
 #include "opensans14b.h"
+#include "opensans24b.h"
 
 #define WAVEFORM EPD_BUILTIN_WAVEFORM
 
@@ -8,10 +11,13 @@
 #define DarkGrey      0x44
 #define Black         0x00
 
-#define STATUSX 230
-#define STATUSY 510
-#define STATUSW 620
-#define STATUSC 32
+#define STATUSX 200
+#define STATUSY 528
+#define STATUSW 600
+#define STATUSH 25
+#define STATUSC 40
+
+#define TITLEY 80
 
 enum alignment {LEFT, RIGHT, CENTER};
 
@@ -96,33 +102,34 @@ void setFont(EpdFont const &font) {
   currentFont = font;
 }
 
-void eInkClear() {
-    epd_fullclear(&hl, temperature);
-    epd_hl_set_all_white(&hl);
-    setFont(currentFont);    
-}
-
 void epd_update() {
     epd_poweron();
     epd_hl_update_screen(&hl, MODE_GC16, temperature);
-    delay(300);
+    delay(600);
     epd_poweroff();
 }
 
 void clearStatusMsg(){
-    fillRect(STATUSX,STATUSY-STATUSC,STATUSW,STATUSC+9,White);
+    fillRect(STATUSX,STATUSY-STATUSH+1,STATUSW,STATUSH+3,White);
     epd_update();
 }
 
 void renderStatusMsg(String msg) {
     clearStatusMsg();
+    setFont(OpenSans8B);
     if(msg.length() > STATUSC) msg = msg.substring(0,STATUSC-1)+"..";
     drawString(EPD_WIDTH/2, STATUSY, msg, CENTER);
     epd_update();
 }
 
+void eInkClear() {
+    epd_fullclear(&hl, temperature);
+    epd_hl_set_all_white(&hl);
+    renderStatusMsg("LOADING...");
+}
+
 void eInkInit() {
-    currentFont = OpenSans14B;
+    currentFont = OpenSans8B;
     epd_init(EPD_OPTIONS_DEFAULT);
     hl = epd_hl_init(WAVEFORM);
     epd_set_rotation(orientation);

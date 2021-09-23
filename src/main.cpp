@@ -22,9 +22,13 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <HTTPClient.h>
 #include <SD.h>
 #include <SPI.h>
+#include <HTTPClient.h>
+#include <WiFiClient.h>
+#include <ArduinoJson.h>
+#include <NTPClient.h>
+#include <WiFiUdp.h>
 #include <wifi.hpp>
 #include <WiFiClientSecure.h>
 #include <Wire.h>
@@ -58,41 +62,39 @@ int retry;              // retry count
 
 uint8_t *framebuffer;
 
+// required for NTP time
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP);
+String formattedDate;
+String dayStamp;
+String timeStamp;
+
+// GMT Offset in seconds. UK normal time is GMT, so GMT Offset is 0, for US (-5Hrs) is typically -18000, AU is typically (+8hrs) 28800
+int   gmtOffset_sec = 7200;
+
 void title() {
+    setFont(OpenSans24B);
     cursor_x = 20;
-    cursor_y = 50;
-    String sym = "Symbol";
+    cursor_y = TITLEY;
+    String sym = "Coin";
     drawString(cursor_x, cursor_y, sym, LEFT);
 
-    cursor_x = 290;
-    cursor_y = 50;
+    cursor_x = 220;
+    cursor_y = TITLEY;
     String prc = "Price";
     drawString(cursor_x, cursor_y, prc, LEFT);
 
-    cursor_x = 520;
-    cursor_y = 50;
+    cursor_x = 460;
+    cursor_y = TITLEY;
     String da = "Day(%)";
     drawString(cursor_x, cursor_y, da, LEFT);
 
-    cursor_x = 790;
-    cursor_y = 50;
+    cursor_x = 700;
+    cursor_y = TITLEY;
     String we = "Week(%)";
     drawString(cursor_x, cursor_y, we, LEFT);
-}
 
-void status() {
-    cursor_x = 20;
-    String bat = "BAT: ";
-    drawString(cursor_x, STATUSY, bat, LEFT);
-
-    cursor_x = 920;
-    String rev = "r0" + String(REVISION);
-    drawString(cursor_x, STATUSY, rev, RIGHT);
-}
-
-void renderBatteryStatus() {
-    cursor_x = 94;
-    drawString(cursor_x,STATUSY,calcBatteryLevel(),LEFT);
+    fillRect(1, cursor_y+10, EPD_WIDTH, 5, Black);
 }
 
 String formatPercentageChange(double change) {
@@ -117,45 +119,102 @@ String getFormatCurrencyValue(double value){
 void renderCryptoCard(Crypto crypto) {
     if(devmod) Serial.printf("-->[eINK] Crypto Name  - %s\n",crypto.symbol.c_str());
 
+    setFont(OpenSans14B);
+
     cursor_x = 50;
     char *string1 = &crypto.symbol[0];
     drawString(cursor_x,cursor_y,String(string1),LEFT);
-    // writeln((GFXfont *)&FiraSans, string1, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 220;
     String Str = getFormatCurrencyValue(crypto.price.inr);
     char *string2 = &Str[0];
-
     if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
-
     drawString(cursor_x,cursor_y,String(string2),LEFT);
-    // writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Day change - %s\n",formatPercentageChange(crypto.dayChange).c_str());
-
-    cursor_x = 530;
+    cursor_x = 480;
     Str = getFormatCurrencyValue(crypto.dayChange);
     char *string3 = &Str[0];
     drawString(cursor_x,cursor_y,String(string3),LEFT);
-    // writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Week change - %s\n",formatPercentageChange(crypto.weekChange).c_str());
-
-    cursor_x = 800;
+    cursor_x = 700;
     Str = getFormatCurrencyValue(crypto.weekChange);
     char *string4 = &Str[0];
     drawString(cursor_x,cursor_y,String(string4),LEFT);
-    // writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
-    epd_update();
+
+    drawFastHLine(1, cursor_y+10, EPD_WIDTH, Black);
+
 }
 
 void updateData() {
     if(devmod) Serial.println("-->[eINK] Rendering partial GUI..");
     for (int i = 0; i < cryptosCount; i++) {
-        cursor_y = (50 * (i + 3));
+        cursor_y = (45 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
     clearStatusMsg();
+}
+
+void drawRSSI(int x, int y, int rssi) {
+    int WIFIsignal = 0;
+    int xpos = 1;
+    for (int _rssi = -100; _rssi <= rssi; _rssi = _rssi + 20) {
+        if (_rssi <= -20) WIFIsignal = 30;  //            <-20dbm displays 5-bars
+        if (_rssi <= -40) WIFIsignal = 24;  //  -40dbm to  -21dbm displays 4-bars
+        if (_rssi <= -60) WIFIsignal = 18;  //  -60dbm to  -41dbm displays 3-bars
+        if (_rssi <= -80) WIFIsignal = 12;  //  -80dbm to  -61dbm displays 2-bars
+        if (_rssi <= -100) WIFIsignal = 6;  // -100dbm to  -81dbm displays 1-bar
+        fillRect(x + xpos * 8, y - WIFIsignal, 7, WIFIsignal, Black);
+        xpos++;
+    }
+    //fillRect(x, y - 1, 5, 1, GxEPD_BLACK);
+    drawString(x + 40, y, String(rssi) + "dBm", LEFT);
+}
+
+void drawBattery(int x, int y) {
+    uint8_t percentage = 100;
+    float voltage = analogRead(35) / 4096.0 * 7.46;
+    if (voltage > 1) {  // Only display if there is a valid reading
+        Serial.println("Voltage = " + String(voltage));
+        percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
+        if (voltage >= 4.20) percentage = 100;
+        if (voltage <= 3.20) percentage = 0;  // orig 3.5
+        drawRect(x + 55, y - 15, 40, 15, Black);
+        fillRect(x + 95, y - 9, 4, 6, Black);
+        fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
+        drawString(x, y, String(percentage) + "%", LEFT);
+        //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
+    }
+}
+
+void getNTPDateTime() {
+    while (!timeClient.update()) {
+        timeClient.forceUpdate();
+    }
+    formattedDate = timeClient.getFormattedDate();
+    int splitT = formattedDate.indexOf("T");
+    dayStamp = formattedDate.substring(0, splitT);
+    timeStamp = formattedDate.substring(splitT + 1, formattedDate.length() - 1);
+}
+
+void displayGeneralInfoSection() {
+    // Uncomment the next line if the display of IP- and MAC-Adddress is wanted
+    //drawString(SCREEN_WIDTH - 150, 20, "IP=" + LocalIP + ",  MAC=" + WiFi.macAddress() ,RIGHT);
+    // drawFastHLine(5, 30, SCREEN_WIDTH - 8, Black);
+    String rev = " rev0" + String(REVISION);
+    getNTPDateTime();
+    drawString(EPD_WIDTH / 2, 14, "Refreshed: " + dayStamp + " at " + timeStamp + rev, CENTER);
+}
+
+void displayStatusSection() {
+    setFont(OpenSans8B);
+    drawBattery(5, 14);
+    displayGeneralInfoSection();
+    drawRSSI(850, 14, getWifiRSSI());
+    fillRect(1, 16, EPD_WIDTH, 2, Black);
+    fillRect(1, EPD_HEIGHT-39, EPD_WIDTH, 3, Black);
+    renderStatusMsg("Downloading Crypto data..");
 }
 
 void eInkTask(void* pvParameters) {
@@ -172,13 +231,8 @@ void eInkTask(void* pvParameters) {
     if (boot_count == 0 || reset_reason == 1) {
         eInkClear();
         title();
-        status();
-        epd_update();
     }
-    setupBattery(); 
-    renderBatteryStatus();
-    renderStatusMsg("Downloading Crypto data..");
-    epd_update();
+    displayStatusSection();
     if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
     vTaskDelete(NULL);
@@ -213,6 +267,8 @@ void setup() {
     bool data_ready = false;
 
     if (wifiInit()) {
+        timeClient.begin();
+        timeClient.setTimeOffset(gmtOffset_sec);
         if (boot_count == 0) {  // only in the full refresh it have download retry
             while (!data_ready && retry++ < MAX_RETRY) data_ready = downloadData();
             if(data_ready) updateData();
@@ -220,6 +276,8 @@ void setup() {
         else if (downloadData()) updateData();
         else epd_update();
     }
+    epd_update();
+    delay(100);
     suspendDevice();
 }
 
