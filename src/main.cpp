@@ -45,16 +45,21 @@
 const char *currency_base = "eur";
 
 // extra debug msgs
-bool devmod = false;
+bool devmod = (bool)CORE_DEBUG_LEVEL;
 
 // ----------------------------
 // End of area you need to change
 // ----------------------------
 
+#define MAX_RETRY 2     // max retry download
+int retry;              // retry count
+
 int cursor_x;
 int cursor_y;
 
 uint8_t *framebuffer;
+
+#define STATUSY 510;
 
 void title() {
     cursor_x = 20;
@@ -80,9 +85,14 @@ void title() {
 
 void status() {
     cursor_x = 20;
-    cursor_y = 500;
+    cursor_y = STATUSY;
     const char *bat = "BAT: ";
     writeln((GFXfont *)&FiraSans, bat, &cursor_x, &cursor_y, NULL);
+
+    cursor_x = 860;
+    cursor_y = STATUSY;
+    String rev = "r0"+String(REVISION);
+    writeln((GFXfont *)&FiraSans, rev.c_str(), &cursor_x, &cursor_y, NULL);
 }
 
 String formatPercentageChange(double change) {
@@ -143,9 +153,26 @@ void renderCryptoCard(Crypto crypto) {
 
 void renderStatus() {
     cursor_x = 110;
-    cursor_y = 500;
-    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,150,50));
+    cursor_y = STATUSY;
+    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,120,50));
     writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
+}
+
+void renderStatusMsg(String msg) {
+    if(msg.length() > 25) msg = msg.substring(0,24)+"..";
+    cursor_x = 250;
+    cursor_y = STATUSY;
+    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,600,50));
+    writeln((GFXfont *)&FiraSans, msg.c_str(), &cursor_x, &cursor_y, NULL);
+    delay(100);
+    epd_poweroff();
+    epd_poweron();
+}
+
+void clearStatusMsg(){
+    cursor_x = 250;
+    cursor_y = STATUSY;
+    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,500,50));
 }
 
 void updateData() {
@@ -154,7 +181,7 @@ void updateData() {
         cursor_y = (50 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
-    renderStatus();
+    clearStatusMsg();
 }
 
 void eInkTask(void* pvParameters) {
@@ -178,12 +205,15 @@ void eInkTask(void* pvParameters) {
     if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
 
-    // epd_poweroff();
-    // epd_poweron();   
+    // epd_poweroff();    // Do we need that?
+    // epd_poweron();  
+
     if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
     title();
     setupBattery(); 
     status();
+    renderStatus();
+    renderStatusMsg("Downloading Crypto data..");
     vTaskDelete(NULL);
 }
 
@@ -199,17 +229,31 @@ void setupGUITask() {
         1);          /* Core where the task should run */
 }
 
-bool downloadData() {
+bool downloadData() {    
     bool baseDataReady = downloadBaseData(currency_base);
+    if(baseDataReady) renderStatusMsg("Downloaded Base data.");
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
+    if(baseDataReady) renderStatusMsg("Downloaded Crypto data.");
     return baseDataReady && cryptoDataReady;
 }
 
 void setup() {
     Serial.begin(115200);
+
     setupGUITask();
-    if (wifiInit() && downloadData()) updateData();
+
+    int boot_count = getInt(key_boot_count, 0);
+    bool data_ready = false;
+
+    if (wifiInit()) {
+        if (boot_count == 0) {  // only in the full refresh it have download retry
+            while (!data_ready && retry++ < MAX_RETRY) data_ready = downloadData();
+            if(data_ready) updateData();
+        }
+        else if (downloadData()) updateData();
+    }
+
     epd_poweroff_all();
     suspendDevice();
 }
