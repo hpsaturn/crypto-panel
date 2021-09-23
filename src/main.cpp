@@ -33,9 +33,20 @@
 #include "hal.h"
 #include "powertools.h"
 #include "settings.h"
+// epd
 #include "epd_driver.h"
-#include "firasans.h"
+#include "epd_highlevel.h"
 #include "rom/rtc.h"
+// font
+#include "opensans8b.h"
+#include "opensans9b.h"
+#include "opensans24b.h"
+#include "Firasans.h"
+
+#define WAVEFORM EPD_BUILTIN_WAVEFORM
+
+#include "eInkHandler.h"
+
 
 // ----------------------------
 // Configurations 
@@ -67,35 +78,35 @@ uint8_t *framebuffer;
 void title() {
     cursor_x = 20;
     cursor_y = 50;
-    const char *sym = "Symbol";
-    writeln((GFXfont *)&FiraSans, sym, &cursor_x, &cursor_y, NULL);
+    String sym = "Symbol";
+    drawString(cursor_x, cursor_y, sym, LEFT);
 
     cursor_x = 290;
     cursor_y = 50;
-    const char *prc = "Price";
-    writeln((GFXfont *)&FiraSans, prc, &cursor_x, &cursor_y, NULL);
+    String prc = "Price";
+    drawString(cursor_x, cursor_y, prc, LEFT);
 
     cursor_x = 520;
     cursor_y = 50;
-    const char *da = "Day(%)";
-    writeln((GFXfont *)&FiraSans, da, &cursor_x, &cursor_y, NULL);
+    String da = "Day(%)";
+    drawString(cursor_x, cursor_y, da, LEFT);
 
     cursor_x = 790;
     cursor_y = 50;
-    const char *we = "Week(%)";
-    writeln((GFXfont *)&FiraSans, we, &cursor_x, &cursor_y, NULL);
+    String we = "Week(%)";
+    drawString(cursor_x, cursor_y, we, LEFT);
 }
 
 void status() {
     cursor_x = 20;
     cursor_y = STATUSY;
-    const char *bat = "BAT: ";
-    writeln((GFXfont *)&FiraSans, bat, &cursor_x, &cursor_y, NULL);
+    String bat = "BAT: ";
+    drawString(cursor_x, cursor_y, bat, LEFT);
 
     cursor_x = 860;
     cursor_y = STATUSY;
-    String rev = "r0"+String(REVISION);
-    writeln((GFXfont *)&FiraSans, rev.c_str(), &cursor_x, &cursor_y, NULL);
+    String rev = "r0" + String(REVISION);
+    drawString(cursor_x, cursor_y, rev, RIGHT);
 }
 
 String formatPercentageChange(double change) {
@@ -111,8 +122,8 @@ String formatPercentageChange(double change) {
     }
 }
 
-Rect_t getEdpArea(int x, int y,int w, int h) {
-    Rect_t area = {
+EpdRect getEdpArea(int x, int y,int w, int h) {
+    EpdRect area = {
         .x = x,
         .y = y,
         .width = w,
@@ -132,7 +143,8 @@ void renderCryptoCard(Crypto crypto) {
 
     cursor_x = 50;
     char *string1 = &crypto.symbol[0];
-    writeln((GFXfont *)&FiraSans, string1, &cursor_x, &cursor_y, NULL);
+    drawString(cursor_x,cursor_y,String(string1),LEFT);
+    // writeln((GFXfont *)&FiraSans, string1, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 220;
     String Str = getFormatCurrencyValue(crypto.price.inr);
@@ -141,7 +153,8 @@ void renderCryptoCard(Crypto crypto) {
     if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
 
     epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 320, 50));
-    writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
+    drawString(cursor_x,cursor_y,String(string2),LEFT);
+    // writeln((GFXfont *)&FiraSans, string2, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Day change - %s\n",formatPercentageChange(crypto.dayChange).c_str());
 
@@ -149,7 +162,8 @@ void renderCryptoCard(Crypto crypto) {
     epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 150, 50));
     Str = getFormatCurrencyValue(crypto.dayChange);
     char *string3 = &Str[0];
-    writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
+    drawString(cursor_x,cursor_y,String(string3),LEFT);
+    // writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
 
     if(devmod) Serial.printf("-->[eINK] Week change - %s\n",formatPercentageChange(crypto.weekChange).c_str());
 
@@ -157,14 +171,16 @@ void renderCryptoCard(Crypto crypto) {
     epd_clear_area(getEdpArea(cursor_x, cursor_y - 40, 150, 50));
     Str = getFormatCurrencyValue(crypto.weekChange);
     char *string4 = &Str[0];
-    writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
+    drawString(cursor_x,cursor_y,String(string4),LEFT);
+    // writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
 }
 
 void renderBatteryStatus() {
     cursor_x = 110;
     cursor_y = STATUSY;
     epd_clear_area(getEdpArea(cursor_x,cursor_y-40,110,50));
-    writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
+    drawString(cursor_x,cursor_y,calcBatteryLevel(),LEFT);
+    // writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
 }
 
 void clearStatusMsg(){
@@ -179,7 +195,8 @@ void renderStatusMsg(String msg) {
     cursor_y = STATUSY;
     clearStatusMsg();
     cursor_x = cursor_x + ((STATUSW-((msg.length() * STATUSW) / STATUSC))/2);
-    writeln((GFXfont *)&FiraSans, msg.c_str(), &cursor_x, &cursor_y, NULL);
+    drawString(cursor_x,cursor_y,msg,LEFT);
+    // writeln((GFXfont *)&FiraSans, msg.c_str(), &cursor_x, &cursor_y, NULL);
 }
 
 void updateData() {
@@ -191,19 +208,7 @@ void updateData() {
     clearStatusMsg();
 }
 
-void eInkInit() {
-    epd_init();
-    framebuffer = (uint8_t *)ps_calloc(sizeof(uint8_t), EPD_WIDTH * EPD_HEIGHT / 2);
-    if (!framebuffer) Serial.println("-->[eINK] alloc memory failed !!!");
-    memset(framebuffer, 0xFF, EPD_WIDTH * EPD_HEIGHT / 2);
-    epd_poweron();
-}
 
-void eInkClear() {
-    epd_clear();
-    epd_poweroff();  // Do we need that?
-    epd_poweron();
-}
 
 void eInkTask(void* pvParameters) {
 
@@ -266,7 +271,7 @@ void setup() {
         else if (downloadData()) updateData();
     }
 
-    epd_poweroff_all();
+    epd_poweroff();
     suspendDevice();
 }
 
