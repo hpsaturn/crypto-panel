@@ -59,7 +59,10 @@ int cursor_y;
 
 uint8_t *framebuffer;
 
-#define STATUSY 510;
+#define STATUSX 230
+#define STATUSY 510
+#define STATUSW 620
+#define STATUSC 29
 
 void title() {
     cursor_x = 20;
@@ -151,28 +154,26 @@ void renderCryptoCard(Crypto crypto) {
     writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
 }
 
-void renderStatus() {
+void renderBatteryStatus() {
     cursor_x = 110;
     cursor_y = STATUSY;
-    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,120,50));
+    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,110,50));
     writeln((GFXfont *)&FiraSans, calcBatteryLevel().c_str(), &cursor_x, &cursor_y, NULL);
 }
 
-void renderStatusMsg(String msg) {
-    if(msg.length() > 25) msg = msg.substring(0,24)+"..";
-    cursor_x = 250;
+void clearStatusMsg(){
+    cursor_x = STATUSX;
     cursor_y = STATUSY;
-    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,600,50));
-    writeln((GFXfont *)&FiraSans, msg.c_str(), &cursor_x, &cursor_y, NULL);
-    delay(100);
-    epd_poweroff();
-    epd_poweron();
+    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,STATUSW,50));
 }
 
-void clearStatusMsg(){
-    cursor_x = 250;
+void renderStatusMsg(String msg) {
+    if(msg.length() > STATUSC) msg = msg.substring(0,STATUSC-1)+"..";
+    cursor_x = STATUSX;
     cursor_y = STATUSY;
-    epd_clear_area(getEdpArea(cursor_x,cursor_y-40,500,50));
+    clearStatusMsg();
+    cursor_x = cursor_x + ((STATUSW-((msg.length() * STATUSW) / STATUSC))/2);
+    writeln((GFXfont *)&FiraSans, msg.c_str(), &cursor_x, &cursor_y, NULL);
 }
 
 void updateData() {
@@ -212,7 +213,7 @@ void eInkTask(void* pvParameters) {
     title();
     setupBattery(); 
     status();
-    renderStatus();
+    renderBatteryStatus();
     renderStatusMsg("Downloading Crypto data..");
     vTaskDelete(NULL);
 }
@@ -231,10 +232,10 @@ void setupGUITask() {
 
 bool downloadData() {    
     bool baseDataReady = downloadBaseData(currency_base);
-    if(baseDataReady) renderStatusMsg("Downloaded Base data.");
+    if(baseDataReady) renderStatusMsg("Base data downloaded.");
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
-    if(baseDataReady) renderStatusMsg("Downloaded Crypto data.");
+    if(baseDataReady) renderStatusMsg("Crypto data ready");
     return baseDataReady && cryptoDataReady;
 }
 
