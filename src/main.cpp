@@ -121,6 +121,12 @@ Rect_t getEdpArea(int x, int y,int w, int h) {
     return area;
 }
 
+String getFormatCurrencyValue(double value){
+    char output[50];
+    sprintf(output, "%05.2f",value);
+    return String(output);
+}
+
 void renderCryptoCard(Crypto crypto) {
     if(devmod) Serial.printf("-->[eINK] Crypto Name  - %s\n",crypto.symbol.c_str());
 
@@ -129,7 +135,7 @@ void renderCryptoCard(Crypto crypto) {
     writeln((GFXfont *)&FiraSans, string1, &cursor_x, &cursor_y, NULL);
 
     cursor_x = 220;
-    String Str = (String)(crypto.price.inr);
+    String Str = getFormatCurrencyValue(crypto.price.inr);
     char *string2 = &Str[0];
 
     if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
@@ -141,7 +147,7 @@ void renderCryptoCard(Crypto crypto) {
 
     cursor_x = 530;
     epd_clear_area(getEdpArea(cursor_x, cursor_y-40, 150, 50));
-    Str = (String)(crypto.dayChange);
+    Str = getFormatCurrencyValue(crypto.dayChange);
     char *string3 = &Str[0];
     writeln((GFXfont *)&FiraSans, string3, &cursor_x, &cursor_y, NULL);
 
@@ -149,7 +155,7 @@ void renderCryptoCard(Crypto crypto) {
 
     cursor_x = 800;
     epd_clear_area(getEdpArea(cursor_x, cursor_y - 40, 150, 50));
-    Str = (String)(crypto.weekChange);
+    Str = getFormatCurrencyValue(crypto.weekChange);
     char *string4 = &Str[0];
     writeln((GFXfont *)&FiraSans, string4, &cursor_x, &cursor_y, NULL);
 }
@@ -237,10 +243,10 @@ void setupGUITask() {
 
 bool downloadData() {    
     bool baseDataReady = downloadBaseData(currency_base);
-    if(baseDataReady) renderStatusMsg("Base data downloaded.");
+    if(baseDataReady) renderStatusMsg("Base data downloaded");
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
-    if(baseDataReady) renderStatusMsg("Crypto data ready");
+    if(baseDataReady && cryptoDataReady) renderStatusMsg("Crypto data ready :D");
     return baseDataReady && cryptoDataReady;
 }
 
