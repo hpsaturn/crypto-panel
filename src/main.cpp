@@ -168,19 +168,19 @@ void eInkTask(void* pvParameters) {
     int reset_reason = rtc_get_reset_reason(0);
     if(devmod) Serial.printf("-->[eINK] reset_reason: %i\n",reset_reason);
 
-    if (boot_count == 0 || reset_reason == 1) eInkClear();
-    if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
-    else setInt(key_boot_count, boot_count++);
-
     if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
     if (boot_count == 0 || reset_reason == 1) {
+        eInkClear();
         title();
         status();
+        epd_update();
     }
     setupBattery(); 
     renderBatteryStatus();
     renderStatusMsg("Downloading Crypto data..");
     epd_update();
+    if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
+    else setInt(key_boot_count, boot_count++);
     vTaskDelete(NULL);
 }
 
@@ -198,7 +198,6 @@ void setupGUITask() {
 
 bool downloadData() {    
     bool baseDataReady = downloadBaseData(currency_base);
-    if(baseDataReady) renderStatusMsg("Base data downloaded");
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
     if(baseDataReady && cryptoDataReady) renderStatusMsg("Crypto data ready :D");
@@ -221,8 +220,6 @@ void setup() {
         else if (downloadData()) updateData();
         else epd_update();
     }
-    else epd_update();
-
     suspendDevice();
 }
 
