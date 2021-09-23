@@ -219,9 +219,10 @@ void setup() {
             if(data_ready) updateData();
         }
         else if (downloadData()) updateData();
+        else epd_update();
     }
+    else epd_update();
 
-    epd_poweroff();
     suspendDevice();
 }
 
