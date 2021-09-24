@@ -1,15 +1,15 @@
-#include "opensans8b.h"
 #include "opensans10b.h"
 #include "opensans14b.h"
 #include "opensans24b.h"
+#include "opensans8b.h"
 
 #define WAVEFORM EPD_BUILTIN_WAVEFORM
 
-#define White         0xFF
-#define LightGrey     0xBB
-#define Grey          0x88
-#define DarkGrey      0x44
-#define Black         0x00
+#define White 0xFF
+#define LightGrey 0xBB
+#define Grey 0x88
+#define DarkGrey 0x44
+#define Black 0x00
 
 #define STATUSX 200
 #define STATUSY 528
@@ -19,11 +19,11 @@
 
 #define TITLEY 80
 
-enum alignment {LEFT, RIGHT, CENTER};
+enum alignment { LEFT, RIGHT, CENTER };
 
 EpdiyHighlevelState hl;
 EpdRotation orientation = EPD_ROT_LANDSCAPE;
-EpdFont  currentFont;
+EpdFont currentFont;
 
 uint8_t *fb;
 enum EpdDrawError err;
@@ -35,51 +35,51 @@ int cursor_x;
 int cursor_y;
 
 void drawString(int x, int y, String text, alignment align) {
-  char * data  = const_cast<char*>(text.c_str());
-  EpdFontProperties font_props = epd_font_properties_default();
-  if (align == CENTER) font_props.flags = EPD_DRAW_ALIGN_CENTER;
-  if (align == LEFT) font_props.flags = EPD_DRAW_ALIGN_LEFT;
-  if (align == RIGHT) font_props.flags = EPD_DRAW_ALIGN_RIGHT;
-  epd_write_string(&currentFont, data, &x, &y, fb, &font_props);
+    char *data = const_cast<char *>(text.c_str());
+    EpdFontProperties font_props = epd_font_properties_default();
+    if (align == CENTER) font_props.flags = EPD_DRAW_ALIGN_CENTER;
+    if (align == LEFT) font_props.flags = EPD_DRAW_ALIGN_LEFT;
+    if (align == RIGHT) font_props.flags = EPD_DRAW_ALIGN_RIGHT;
+    epd_write_string(&currentFont, data, &x, &y, fb, &font_props);
 }
 
 void fillCircle(int x, int y, int r, uint8_t color) {
-  epd_fill_circle(x, y, r, color, fb);
+    epd_fill_circle(x, y, r, color, fb);
 }
 
 void drawFastHLine(int16_t x0, int16_t y0, int length, uint16_t color) {
-  epd_draw_hline(x0, y0, length, color, fb);
+    epd_draw_hline(x0, y0, length, color, fb);
 }
 
 void drawFastVLine(int16_t x0, int16_t y0, int length, uint16_t color) {
-  epd_draw_vline(x0, y0, length, color, fb);
+    epd_draw_vline(x0, y0, length, color, fb);
 }
 
 void drawCircle(int x0, int y0, int r, uint8_t color) {
-  epd_draw_circle(x0, y0, r, color, fb);
+    epd_draw_circle(x0, y0, r, color, fb);
 }
 
 void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
-  EpdRect area = {
+    EpdRect area = {
         .x = x,
         .y = y,
         .width = w,
         .height = h,
     };
-  epd_draw_rect(area, color, fb);
+    epd_draw_rect(area, color, fb);
 }
 
 void fillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
-  EpdRect area = {
+    EpdRect area = {
         .x = x,
         .y = y,
         .width = w,
         .height = h,
     };
-  epd_fill_rect(area, color, fb);
+    epd_fill_rect(area, color, fb);
 }
 
-EpdRect getEdpArea(int x, int y,int w, int h) {
+EpdRect getEdpArea(int x, int y, int w, int h) {
     EpdRect area = {
         .x = x,
         .y = y,
@@ -91,15 +91,15 @@ EpdRect getEdpArea(int x, int y,int w, int h) {
 
 void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1,
                   int16_t x2, int16_t y2, uint16_t color) {
-  epd_fill_triangle(x0, y0, x1, y1, x2, y2, color, fb);
+    epd_fill_triangle(x0, y0, x1, y1, x2, y2, color, fb);
 }
 
 void drawPixel(int x, int y, uint8_t color) {
-  epd_draw_pixel(x, y, color, fb);
+    epd_draw_pixel(x, y, color, fb);
 }
 
 void setFont(EpdFont const &font) {
-  currentFont = font;
+    currentFont = font;
 }
 
 void epd_update() {
@@ -109,16 +109,16 @@ void epd_update() {
     epd_poweroff();
 }
 
-void clearStatusMsg(){
-    fillRect(STATUSX,STATUSY-STATUSH+1,STATUSW,STATUSH+3,White);
+void clearStatusMsg() {
+    fillRect(STATUSX, STATUSY - STATUSH + 1, STATUSW, STATUSH + 3, White);
     epd_update();
 }
 
 void renderStatusMsg(String msg) {
     clearStatusMsg();
     setFont(OpenSans8B);
-    if(msg.length() > STATUSC) msg = msg.substring(0,STATUSC-1)+"..";
-    drawString(EPD_WIDTH/2, STATUSY, msg, CENTER);
+    if (msg.length() > STATUSC) msg = msg.substring(0, STATUSC - 1) + "..";
+    drawString(EPD_WIDTH / 2, STATUSY, msg, CENTER);
     epd_update();
 }
 
@@ -135,5 +135,3 @@ void eInkInit() {
     epd_set_rotation(orientation);
     fb = epd_hl_get_framebuffer(&hl);
 }
-
-

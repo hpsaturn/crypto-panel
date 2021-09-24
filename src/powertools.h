@@ -1,6 +1,13 @@
 #include "esp_adc_cal.h"
 
+
+#define BATTERY_MIN_V 3.2
+#define BATTERY_MAX_V 4.1
+#define BATTCHARG_MIN_V 4.65
+#define BATTCHARG_MAX_V 4.88
+
 int vref = 1100;
+float curv = 0;
 
 void suspendDevice() {
     Serial.println("-->[eINK] shutdown..");
@@ -30,4 +37,27 @@ float calcBatteryLevel() {
     uint16_t v = analogRead(BATT_PIN);
     float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
     return battery_voltage;
+}
+
+uint8_t _calcPercentage(float volts, float max, float min) {
+    float percentage = (volts - min) * 100 / (max - min);
+    if (percentage > 100) {
+        percentage = 100;
+    }
+    if (percentage < 0) {
+        percentage = 0;
+    }
+    return (uint8_t)percentage;
+}
+
+bool battIsCharging() {
+    return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
+}
+
+uint8_t battCalcPercentage(float volts) {
+    if (battIsCharging()){
+      return _calcPercentage(volts,BATTCHARG_MAX_V,BATTCHARG_MIN_V);
+    } else {
+      return _calcPercentage(volts,BATTERY_MAX_V,BATTERY_MIN_V);
+    }
 }

@@ -176,7 +176,7 @@ void drawRSSI(int x, int y, int rssi) {
 
 void drawBattery(int x, int y) {
     uint8_t percentage = 100;
-    // float voltage = analogRead(35) / 4096.0 * 7.46;
+    float voltage = calcBatteryLevel();
     if (voltage < 1) return;
     Serial.println("-->[vADC] " + String(voltage) + "v");
     percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
@@ -212,6 +212,8 @@ void displayGeneralInfoSection() {
 
 void displayStatusSection() {
     setFont(OpenSans8B);
+    setupBattery();
+    delay(10);
     drawBattery(5, 14);
     displayGeneralInfoSection();
     drawRSSI(850, 14, getWifiRSSI());
@@ -267,8 +269,6 @@ bool downloadData() {
 void setup() {
     Serial.begin(115200);
 
-    setupBattery();
-    voltage = calcBatteryLevel();
     setupGUITask();
 
     int boot_count = getInt(key_boot_count, 0);
