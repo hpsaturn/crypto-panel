@@ -69,6 +69,8 @@ String formattedDate;
 String dayStamp;
 String timeStamp;
 
+float voltage;
+
 // GMT Offset in seconds. UK normal time is GMT, so GMT Offset is 0, for US (-5Hrs) is typically -18000, AU is typically (+8hrs) 28800
 int   gmtOffset_sec = 7200;
 
@@ -174,18 +176,18 @@ void drawRSSI(int x, int y, int rssi) {
 
 void drawBattery(int x, int y) {
     uint8_t percentage = 100;
-    float voltage = analogRead(35) / 4096.0 * 7.46;
-    if (voltage > 1) {  // Only display if there is a valid reading
-        Serial.println("Voltage = " + String(voltage));
-        percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
-        if (voltage >= 4.20) percentage = 100;
-        if (voltage <= 3.20) percentage = 0;  // orig 3.5
-        drawRect(x + 55, y - 15, 40, 15, Black);
-        fillRect(x + 95, y - 9, 4, 6, Black);
-        fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
-        drawString(x, y, String(percentage) + "%", LEFT);
-        //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
-    }
+    // float voltage = analogRead(35) / 4096.0 * 7.46;
+    if (voltage < 1) return;
+    Serial.println("-->[vADC] " + String(voltage) + "v");
+    percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
+    if (voltage >= 4.20) percentage = 100;
+    if (voltage <= 3.20) percentage = 0;  // orig 3.5
+    drawRect(x + 55, y - 15, 40, 15, Black);
+    fillRect(x + 95, y - 9, 4, 6, Black);
+    fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
+    drawString(x, y, String(percentage) + "%", LEFT);
+    drawString(10, STATUSY, "Batt:" + String(voltage) + "v", LEFT);
+    //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
 }
 
 void getNTPDateTime() {
@@ -203,8 +205,9 @@ void displayGeneralInfoSection() {
     //drawString(SCREEN_WIDTH - 150, 20, "IP=" + LocalIP + ",  MAC=" + WiFi.macAddress() ,RIGHT);
     // drawFastHLine(5, 30, SCREEN_WIDTH - 8, Black);
     String rev = " rev0" + String(REVISION);
+    drawString(EPD_WIDTH-10, STATUSY, rev, RIGHT);
     getNTPDateTime();
-    drawString(EPD_WIDTH / 2, 14, "Refreshed: " + dayStamp + " at " + timeStamp + rev, CENTER);
+    drawString(EPD_WIDTH / 2, 14, "Refreshed: " + dayStamp + " at " + timeStamp, CENTER);
 }
 
 void displayStatusSection() {
@@ -213,7 +216,7 @@ void displayStatusSection() {
     displayGeneralInfoSection();
     drawRSSI(850, 14, getWifiRSSI());
     fillRect(1, 16, EPD_WIDTH, 2, Black);
-    fillRect(1, EPD_HEIGHT-39, EPD_WIDTH, 3, Black);
+    fillRect(1, EPD_HEIGHT-39, EPD_WIDTH, 3, Black); 
     renderStatusMsg("Downloading Crypto data..");
 }
 
@@ -232,9 +235,12 @@ void eInkTask(void* pvParameters) {
         eInkClear();
         title();
     }
+    else renderStatusMsg("CONNECTING...");
     displayStatusSection();
+
     if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
+
     vTaskDelete(NULL);
 }
 
@@ -261,6 +267,8 @@ bool downloadData() {
 void setup() {
     Serial.begin(115200);
 
+    setupBattery();
+    voltage = calcBatteryLevel();
     setupGUITask();
 
     int boot_count = getInt(key_boot_count, 0);

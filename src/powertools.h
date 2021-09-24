@@ -26,10 +26,8 @@ void setupBattery() {
     }
 }
 
-String calcBatteryLevel() {
+float calcBatteryLevel() {
     uint16_t v = analogRead(BATT_PIN);
     float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    String voltage = String(battery_voltage) + "v";
-    Serial.printf("-->[BATT] %s\n",voltage.c_str());
-    return voltage;
+    return battery_voltage;
 }
