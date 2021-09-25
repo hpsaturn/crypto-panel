@@ -155,7 +155,7 @@ void updateData() {
         cursor_y = (45 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
-    clearStatusMsg();
+    // clearStatusMsg();
 }
 
 void drawRSSI(int x, int y, int rssi) {
@@ -176,16 +176,16 @@ void drawRSSI(int x, int y, int rssi) {
 
 void drawBattery(int x, int y) {
     uint8_t percentage = 100;
-    float voltage = calcBatteryLevel();
-    // if (voltage < 1) return;
+    voltage = calcBatteryLevel();
+    drawString(10, STATUSY, "Batt:" + String(voltage) + "v", LEFT);
     Serial.println("-->[vADC] " + String(voltage) + "v");
+    if (voltage < 1) return;
     // percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
     percentage = battCalcPercentage(voltage);
     drawRect(x + 55, y - 15, 40, 15, Black);
     fillRect(x + 95, y - 9, 4, 6, Black);
     fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
     drawString(x, y, String(percentage) + "%", LEFT);
-    drawString(10, STATUSY, "Batt:" + String(voltage) + "v", LEFT);
     //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
 }
 
@@ -225,6 +225,11 @@ void onUpdateMessage(const char *msg){
     setInt(key_boot_count, 0);
 }
 
+void renderVersion() {
+    String status = ""+String(FLAVOR)+" v"+VERSION+" "+TARGET;
+    renderStatusMsg(status);
+}
+
 void eInkTask(void* pvParameters) {
 
     eInkInit();
@@ -238,9 +243,11 @@ void eInkTask(void* pvParameters) {
     if(devmod) Serial.println("-->[eINK] Drawing static GUI..");
     if (boot_count == 0 || reset_reason == 1) {
         eInkClear();
+        renderStatusMsg("LOADING...");
         title();
     }
-    else renderStatusMsg("CONNECTING...");
+    else renderStatusMsg("====== Connecting ======");
+    
     displayStatusSection();
 
     if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
@@ -263,18 +270,27 @@ void setupGUITask() {
 
 bool downloadData() {    
     bool baseDataReady = downloadBaseData(currency_base);
+    if(!baseDataReady){
+        renderStatusMsg("== Bad response on BASE currency API ==");
+        return false;
+    }
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
-    if(baseDataReady && cryptoDataReady) renderStatusMsg("Crypto data ready :D");
+    if(!baseDataReady){
+        renderStatusMsg("== Bad response on Crypto currency API ==");
+        return false;
+    }
+    
+    if(baseDataReady && cryptoDataReady) renderVersion();
     return baseDataReady && cryptoDataReady;
 }
 
 void setup() {
     Serial.begin(115200);
+    delay(1);
     setupBattery();
-    delay(100);
+    delay(1);
     setupGUITask();
-
     int boot_count = getInt(key_boot_count, 0);
     bool data_ready = false;
 

@@ -125,7 +125,6 @@ void renderStatusMsg(String msg) {
 void eInkClear() {
     epd_fullclear(&hl, temperature);
     epd_hl_set_all_white(&hl);
-    renderStatusMsg("LOADING...");
 }
 
 void eInkInit() {
