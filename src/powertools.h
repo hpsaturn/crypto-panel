@@ -1,5 +1,6 @@
+#include <driver/adc.h>
 #include "esp_adc_cal.h"
-
+#include "esp_sleep.h"
 
 #define BATTERY_MIN_V 3.2
 #define BATTERY_MAX_V 4.1
@@ -28,9 +29,9 @@ void setupBattery() {
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        log_i("eFuse Vref:%u mV\n", adc_chars.vref);
+        log_i("eFuse Vref:%u mV", adc_chars.vref);
         vref = adc_chars.vref;
-    }
+    } 
 }
 
 float calcBatteryLevel() {

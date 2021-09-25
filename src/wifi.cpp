@@ -10,6 +10,21 @@ int rssi = 0;
 *   W I F I   M E T H O D S
 ******************************************************************************/
 
+void otaMessageCb(voidMessageCbFn cb) {
+    ota.setOnUpdateMessageCb(cb);
+}
+
+void otaLoop() {
+    if (WiFi.isConnected()) {
+        ota.loop();
+        ota.checkRemoteOTA();
+    }
+}
+
+void otaInit() {
+    ota.setup("EPD47ESP32", "CanAirIO");
+}
+
 bool wifiConnect(const char* ssid, const char* pass) {
     Serial.printf("-->[WIFI] connecting to %s\n",ssid);
     int wifi_retry = 0;
@@ -21,6 +36,7 @@ bool wifiConnect(const char* ssid, const char* pass) {
     if (WiFi.isConnected()) {
         Serial.print("-->[WIFI] IP: ");
         Serial.println(WiFi.localIP());
+        otaInit();
         return true;
     } else {
         Serial.println("-->[WIFI] disconnected!");

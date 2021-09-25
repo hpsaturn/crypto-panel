@@ -177,11 +177,10 @@ void drawRSSI(int x, int y, int rssi) {
 void drawBattery(int x, int y) {
     uint8_t percentage = 100;
     float voltage = calcBatteryLevel();
-    if (voltage < 1) return;
+    // if (voltage < 1) return;
     Serial.println("-->[vADC] " + String(voltage) + "v");
-    percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
-    if (voltage >= 4.20) percentage = 100;
-    if (voltage <= 3.20) percentage = 0;  // orig 3.5
+    // percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
+    percentage = battCalcPercentage(voltage);
     drawRect(x + 55, y - 15, 40, 15, Black);
     fillRect(x + 95, y - 9, 4, 6, Black);
     fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
@@ -212,14 +211,18 @@ void displayGeneralInfoSection() {
 
 void displayStatusSection() {
     setFont(OpenSans8B);
-    setupBattery();
-    delay(10);
     drawBattery(5, 14);
     displayGeneralInfoSection();
     drawRSSI(850, 14, getWifiRSSI());
     fillRect(1, 16, EPD_WIDTH, 2, Black);
     fillRect(1, EPD_HEIGHT-39, EPD_WIDTH, 3, Black); 
     renderStatusMsg("Downloading Crypto data..");
+}
+
+void onUpdateMessage(const char *msg){
+    renderStatusMsg("Updating firmware to rev 0"+String(msg));
+    delay(100);
+    setInt(key_boot_count, 0);
 }
 
 void eInkTask(void* pvParameters) {
@@ -268,13 +271,15 @@ bool downloadData() {
 
 void setup() {
     Serial.begin(115200);
-
+    setupBattery();
+    delay(100);
     setupGUITask();
 
     int boot_count = getInt(key_boot_count, 0);
     bool data_ready = false;
 
     if (wifiInit()) {
+        otaMessageCb(&onUpdateMessage);
         timeClient.begin();
         timeClient.setTimeOffset(gmtOffset_sec);
         if (boot_count == 0) {  // only in the full refresh it have download retry
@@ -285,7 +290,8 @@ void setup() {
         else epd_update();
     }
     epd_update();
-    delay(100);
+    otaLoop();
+    delay(200);
     suspendDevice();
 }
 
