@@ -9,6 +9,7 @@
 
 int vref = 1100;
 float curv = 0;
+double_t battery_voltage = 0;
 
 void suspendDevice() {
     Serial.println("-->[eINK] shutdown..");
@@ -24,41 +25,47 @@ void espShallowSleep(int ms) {
     esp_light_sleep_start();
 }
 
-void setupBattery() {
+void correct_adc_reference() {
     // Correct the ADC reference voltage
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        log_i("eFuse Vref:%u mV", adc_chars.vref);
+        Serial.printf("eFuse Vref:%u mV", adc_chars.vref);
         vref = adc_chars.vref;
-    } 
+    }
 }
 
-float calcBatteryLevel() {
+double_t get_battery_percentage() {
+    // When reading the battery voltage, POWER_EN must be turned on
+    epd_poweron();
+    delay(50);
+
+    Serial.println(epd_ambient_temperature());
+
     uint16_t v = analogRead(BATT_PIN);
-    return ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    // return ((float)v / 4096.0) * 7.46; 
-}
+    battery_voltage = ((double_t)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
+    Serial.println("-->[vADC] " + String(battery_voltage) + "v");
 
-uint8_t _calcPercentage(float volts, float max, float min) {
-    float percentage = (volts - min) * 100 / (max - min);
-    if (percentage > 100) {
-        percentage = 100;
+    // Better formula needed I suppose
+    // experimental super simple percent estimate no lookup anything just divide by 100
+    double_t percent_experiment = ((battery_voltage - 3.7) / 0.5) * 100;
+
+    // cap out battery at 100%
+    // on charging it spikes higher
+    if (percent_experiment > 100) {
+        percent_experiment = 100;
     }
-    if (percentage < 0) {
-        percentage = 0;
-    }
-    return (uint8_t)percentage;
+
+    String voltage = "-->[vADC] V which is around " + String(percent_experiment) + "%";
+    Serial.println(voltage);
+
+    epd_poweroff();
+    delay(50);
+
+    return percent_experiment;
 }
 
 bool battIsCharging() {
     return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
 }
 
-uint8_t battCalcPercentage(float volts) {
-    if (battIsCharging()){
-      return _calcPercentage(volts,BATTCHARG_MAX_V,BATTCHARG_MIN_V);
-    } else {
-      return _calcPercentage(volts,BATTERY_MAX_V,BATTERY_MIN_V);
-    }
-}

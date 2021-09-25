@@ -35,13 +35,13 @@
 #include "cryptos.h"
 #include "coingecko-api.h"
 #include "hal.h"
-#include "powertools.h"
 #include "settings.h"
 // epd
 #include "epd_driver.h"
 #include "epd_highlevel.h"
 #include "rom/rtc.h"
 #include "eInkHandler.h"
+#include "powertools.h"
 
 // ----------------------------
 // Configurations 
@@ -62,16 +62,13 @@ int retry;              // retry count
 
 uint8_t *framebuffer;
 
-// required for NTP time
+// NTP time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
 String formattedDate;
 String dayStamp;
 String timeStamp;
-
-float voltage;
-
-// GMT Offset in seconds. UK normal time is GMT, so GMT Offset is 0, for US (-5Hrs) is typically -18000, AU is typically (+8hrs) 28800
+// GMT Offset in seconds. UK normal time is GMT, so GMT Offset is 0, for US (-5Hrs) is typically -18000.
 int   gmtOffset_sec = 7200;
 
 void title() {
@@ -176,17 +173,12 @@ void drawRSSI(int x, int y, int rssi) {
 
 void drawBattery(int x, int y) {
     setFont(OpenSans8B);
-    uint8_t percentage = 100;
-    voltage = calcBatteryLevel();
-    drawString(10, STATUSY, "Batt:" + String(voltage) + "v", LEFT);
-    Serial.println("-->[vADC] " + String(voltage) + "v");
-    if (voltage < 1) return;
-    // percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
-    percentage = battCalcPercentage(voltage);
+    double_t percentage = get_battery_percentage();
     drawRect(x + 55, y - 15, 40, 15, Black);
     fillRect(x + 95, y - 9, 4, 6, Black);
     fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
-    drawString(x, y, String(percentage) + "%", LEFT);
+    drawString(x, y, String((int)percentage) + "%", LEFT);
+    drawString(10, STATUSY, "Batt:" + String(battery_voltage) + "v", LEFT);
     //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
 }
 
@@ -287,7 +279,7 @@ bool downloadData() {
 
 void setup() {
     Serial.begin(115200);
-    setupBattery();
+    correct_adc_reference();
     setupGUITask();
     int boot_count = getInt(key_boot_count, 0);
     bool data_ready = false;
@@ -305,8 +297,8 @@ void setup() {
     }
     else {
         renderStatusMsg("WiFi connection lost..");
-        epd_update();
     }
+    epd_update();
     otaLoop();
     delay(200);
     suspendDevice();
