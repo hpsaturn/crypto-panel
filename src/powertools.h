@@ -36,8 +36,8 @@ void setupBattery() {
 
 float calcBatteryLevel() {
     uint16_t v = analogRead(BATT_PIN);
-    float battery_voltage = ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    return battery_voltage;
+    return ((float)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
+    // return ((float)v / 4096.0) * 7.46; 
 }
 
 uint8_t _calcPercentage(float volts, float max, float min) {

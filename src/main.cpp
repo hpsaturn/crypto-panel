@@ -175,6 +175,7 @@ void drawRSSI(int x, int y, int rssi) {
 }
 
 void drawBattery(int x, int y) {
+    setFont(OpenSans8B);
     uint8_t percentage = 100;
     voltage = calcBatteryLevel();
     drawString(10, STATUSY, "Batt:" + String(voltage) + "v", LEFT);
@@ -210,7 +211,6 @@ void displayGeneralInfoSection() {
 }
 
 void displayStatusSection() {
-    setFont(OpenSans8B);
     drawBattery(5, 14);
     displayGeneralInfoSection();
     drawRSSI(850, 14, getWifiRSSI());
@@ -287,9 +287,7 @@ bool downloadData() {
 
 void setup() {
     Serial.begin(115200);
-    delay(1);
     setupBattery();
-    delay(1);
     setupGUITask();
     int boot_count = getInt(key_boot_count, 0);
     bool data_ready = false;
@@ -305,7 +303,10 @@ void setup() {
         else if (downloadData()) updateData();
         else epd_update();
     }
-    epd_update();
+    else {
+        renderStatusMsg("WiFi connection lost..");
+        epd_update();
+    }
     otaLoop();
     delay(200);
     suspendDevice();
