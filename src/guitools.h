@@ -15,7 +15,7 @@
 #define STATUSY 528
 #define STATUSW 600
 #define STATUSH 25
-#define STATUSC 40
+#define STATUSC 50
 
 #define TITLEY 80
 
@@ -111,14 +111,18 @@ void epd_update() {
 
 void clearStatusMsg() {
     fillRect(STATUSX, STATUSY - STATUSH + 1, STATUSW, STATUSH + 3, White);
-    epd_update();
+}
+
+void renderStatusQueue(String msg) {
+    setFont(OpenSans8B);
+    clearStatusMsg();
+    if (msg.length() > STATUSC) msg = msg.substring(0, STATUSC - 1) + "..";
+    drawString(EPD_WIDTH / 2, STATUSY, msg, CENTER);
 }
 
 void renderStatusMsg(String msg) {
     clearStatusMsg();
-    setFont(OpenSans8B);
-    if (msg.length() > STATUSC) msg = msg.substring(0, STATUSC - 1) + "..";
-    drawString(EPD_WIDTH / 2, STATUSY, msg, CENTER);
+    renderStatusQueue(msg);
     epd_update();
 }
 
