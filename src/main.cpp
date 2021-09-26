@@ -40,7 +40,7 @@
 #include "epd_driver.h"
 #include "epd_highlevel.h"
 #include "rom/rtc.h"
-#include "eInkHandler.h"
+#include "guitools.h"
 #include "powertools.h"
 
 // ----------------------------
@@ -72,27 +72,19 @@ int   gmtOffset_sec = 7200;
 
 void title() {
     setFont(OpenSans24B);
-    cursor_x = 20;
-    cursor_y = TITLEY;
     String sym = "Coin";
-    drawString(cursor_x, cursor_y, sym, LEFT);
+    drawString(20, TITLEY, sym, LEFT);
 
-    cursor_x = 220;
-    cursor_y = TITLEY;
     String prc = "Price";
-    drawString(cursor_x, cursor_y, prc, LEFT);
+    drawString(220, TITLEY, prc, LEFT);
 
-    cursor_x = 460;
-    cursor_y = TITLEY;
     String da = "Day(%)";
-    drawString(cursor_x, cursor_y, da, LEFT);
+    drawString(460, TITLEY, da, LEFT);
 
-    cursor_x = 700;
-    cursor_y = TITLEY;
     String we = "Week(%)";
-    drawString(cursor_x, cursor_y, we, LEFT);
+    drawString(700, TITLEY, we, LEFT);
 
-    fillRect(1, cursor_y+10, EPD_WIDTH, 5, Black);
+    fillRect(1, TITLEY+10, EPD_WIDTH, 5, Black);
 }
 
 String formatPercentageChange(double change) {
@@ -110,7 +102,7 @@ String formatPercentageChange(double change) {
 
 String getFormatCurrencyValue(double value){
     char output[50];
-    sprintf(output, "%05.2f",value);
+    sprintf(output, "%04.2f",value);
     return String(output);
 }
 
@@ -119,27 +111,23 @@ void renderCryptoCard(Crypto crypto) {
 
     setFont(OpenSans14B);
 
-    cursor_x = 50;
     char *string1 = &crypto.symbol[0];
-    drawString(cursor_x,cursor_y,String(string1),LEFT);
+    drawString(50,cursor_y,String(string1),LEFT);
 
-    cursor_x = 220;
     String Str = getFormatCurrencyValue(crypto.price.inr);
     char *string2 = &Str[0];
     if(devmod) Serial.printf("-->[eINK] Price USD - %s\n",Str.c_str());
-    drawString(cursor_x,cursor_y,String(string2),LEFT);
+    drawString(345,cursor_y,String(string2),RIGHT);
 
     if(devmod) Serial.printf("-->[eINK] Day change - %s\n",formatPercentageChange(crypto.dayChange).c_str());
-    cursor_x = 480;
     Str = getFormatCurrencyValue(crypto.dayChange);
     char *string3 = &Str[0];
-    drawString(cursor_x,cursor_y,String(string3),LEFT);
+    drawString(560,cursor_y,String(string3),RIGHT);
 
     if(devmod) Serial.printf("-->[eINK] Week change - %s\n",formatPercentageChange(crypto.weekChange).c_str());
-    cursor_x = 700;
     Str = getFormatCurrencyValue(crypto.weekChange);
     char *string4 = &Str[0];
-    drawString(cursor_x,cursor_y,String(string4),LEFT);
+    drawString(EPD_WIDTH-130,cursor_y,String(string4),RIGHT);
 
     drawFastHLine(1, cursor_y+10, EPD_WIDTH, Black);
 
@@ -256,12 +244,12 @@ void setupGUITask() {
 
 void renderVersion() {
     String status = ""+String(FLAVOR)+" v"+VERSION+" "+TARGET;
-    renderStatusMsg(status);
+    renderStatusQueue(status);
 }
 
 void renderNetworkError() {
     String status = "Last message: Bad response from Crypto API";
-    renderStatusMsg(status);
+    renderStatusQueue(status);
 }
 
 bool downloadData() {    
@@ -276,6 +264,10 @@ void setup() {
     Serial.begin(115200);
     correct_adc_reference();
     setupGUITask();
+
+    esp_task_wdt_init(30, true);
+    esp_task_wdt_add(NULL);
+
     int boot_count = getInt(key_boot_count, 0);
     bool data_ready = false;
 
@@ -296,6 +288,7 @@ void setup() {
             renderNetworkError();
     }
     else {
+        delay(100);
         renderStatusMsg("WiFi connection lost..");
     }
     epd_update();
