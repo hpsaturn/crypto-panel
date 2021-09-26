@@ -58,7 +58,6 @@ const char *currency_base = "eur";
 bool devmod = (bool)CORE_DEBUG_LEVEL;
 
 #define MAX_RETRY 2     // max retry download
-int retry;              // retry count
 
 uint8_t *framebuffer;
 
@@ -268,7 +267,7 @@ bool downloadData() {
     }
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
-    if(!baseDataReady){
+    if(!cryptoDataReady){
         renderStatusMsg("== Bad response on Crypto currency API ==");
         return false;
     }
@@ -288,8 +287,13 @@ void setup() {
         otaMessageCb(&onUpdateMessage);
         timeClient.begin();
         timeClient.setTimeOffset(gmtOffset_sec);
+
+        int retry = 0;
         if (boot_count == 0) {  // only in the full refresh it have download retry
-            while (!data_ready && retry++ < MAX_RETRY) data_ready = downloadData();
+            while (!data_ready && retry++ < MAX_RETRY) {
+                data_ready = downloadData();
+                delay(500);
+            }
             if(data_ready) updateData();
         }
         else if (downloadData()) updateData();
