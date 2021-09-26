@@ -22,7 +22,7 @@ void otaLoop() {
 }
 
 void otaInit() {
-    ota.setup("EPD47ESP32", "CanAirIO");
+    ota.setup("EPD47ESP32", "epd47esp32");
 }
 
 bool wifiConnect(const char* ssid, const char* pass) {
