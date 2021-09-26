@@ -2,10 +2,10 @@
 #include "esp_adc_cal.h"
 #include "esp_sleep.h"
 
-#define BATTERY_MIN_V 3.2
-#define BATTERY_MAX_V 4.1
+#define BATTERY_MIN_V 3.3
+#define BATTERY_MAX_V 4.2
 #define BATTCHARG_MIN_V 4.65
-#define BATTCHARG_MAX_V 4.88
+#define BATTCHARG_MAX_V 4.91
 
 int vref = 1100;
 float curv = 0;
@@ -30,7 +30,7 @@ void correct_adc_reference() {
     esp_adc_cal_characteristics_t adc_chars;
     esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
     if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        Serial.printf("eFuse Vref:%u mV", adc_chars.vref);
+        log_i("eFuse Vref:%u mV", adc_chars.vref);
         vref = adc_chars.vref;
     }
 }
@@ -63,29 +63,19 @@ double_t get_battery_percentage() {
     epd_poweron();
     delay(50);
 
-    Serial.println(epd_ambient_temperature());
-
     uint16_t v = analogRead(BATT_PIN);
     battery_voltage = ((double_t)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
     Serial.println("-->[vADC] " + String(battery_voltage) + "v");
 
-    // Better formula needed I suppose
-    // experimental super simple percent estimate no lookup anything just divide by 100
-    double_t percent_experiment = battCalcPercentage(battery_voltage);
+    double_t percent = battCalcPercentage(battery_voltage);
 
-    // cap out battery at 100%
-    // on charging it spikes higher
-    if (percent_experiment > 100) {
-        percent_experiment = 100;
-    }
-
-    String voltage = "-->[vADC] V which is around " + String(percent_experiment) + "%";
+    String voltage = "-->[vADC] Battery charge at " + String(percent) + "%";
     Serial.println(voltage);
 
     epd_poweroff();
     delay(50);
 
-    return percent_experiment;
+    return percent;
 }
 
 
