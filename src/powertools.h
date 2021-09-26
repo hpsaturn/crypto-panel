@@ -35,6 +35,29 @@ void correct_adc_reference() {
     }
 }
 
+double_t _calcPercentage(double_t volts, float max, float min) {
+    double_t percentage = (volts - min) * 100 / (max - min);
+    if (percentage > 100) {
+        percentage = 100;
+    }
+    if (percentage < 0) {
+        percentage = 0;
+    }
+    return percentage;
+}
+
+bool battIsCharging() {
+    return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
+}
+
+double_t battCalcPercentage(double_t volts) {
+    if (battIsCharging()){
+      return _calcPercentage(volts,BATTCHARG_MAX_V,BATTCHARG_MIN_V);
+    } else {
+      return _calcPercentage(volts,BATTERY_MAX_V,BATTERY_MIN_V);
+    }
+}
+
 double_t get_battery_percentage() {
     // When reading the battery voltage, POWER_EN must be turned on
     epd_poweron();
@@ -48,7 +71,7 @@ double_t get_battery_percentage() {
 
     // Better formula needed I suppose
     // experimental super simple percent estimate no lookup anything just divide by 100
-    double_t percent_experiment = ((battery_voltage - 3.7) / 0.5) * 100;
+    double_t percent_experiment = battCalcPercentage(battery_voltage);
 
     // cap out battery at 100%
     // on charging it spikes higher
@@ -65,7 +88,5 @@ double_t get_battery_percentage() {
     return percent_experiment;
 }
 
-bool battIsCharging() {
-    return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
-}
+
 

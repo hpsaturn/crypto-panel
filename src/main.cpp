@@ -212,13 +212,8 @@ void displayStatusSection() {
 
 void onUpdateMessage(const char *msg){
     renderStatusMsg("Updating firmware to rev 0"+String(msg));
-    delay(100);
+    delay(200);
     setInt(key_boot_count, 0);
-}
-
-void renderVersion() {
-    String status = ""+String(FLAVOR)+" v"+VERSION+" "+TARGET;
-    renderStatusMsg(status);
 }
 
 void eInkTask(void* pvParameters) {
@@ -259,19 +254,20 @@ void setupGUITask() {
         1);          /* Core where the task should run */
 }
 
+void renderVersion() {
+    String status = ""+String(FLAVOR)+" v"+VERSION+" "+TARGET;
+    renderStatusMsg(status);
+}
+
+void renderNetworkError() {
+    String status = "Last message: Bad response from Crypto API";
+    renderStatusMsg(status);
+}
+
 bool downloadData() {    
     bool baseDataReady = downloadBaseData(currency_base);
-    if(!baseDataReady){
-        renderStatusMsg("== Bad response on BASE currency API ==");
-        return false;
-    }
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
-    if(!cryptoDataReady){
-        renderStatusMsg("== Bad response on Crypto currency API ==");
-        return false;
-    }
-    
     if(baseDataReady && cryptoDataReady) renderVersion();
     return baseDataReady && cryptoDataReady;
 }
@@ -290,21 +286,21 @@ void setup() {
 
         int retry = 0;
         if (boot_count == 0) {  // only in the full refresh it have download retry
-            while (!data_ready && retry++ < MAX_RETRY) {
-                data_ready = downloadData();
-                delay(500);
-            }
-            if(data_ready) updateData();
-        }
-        else if (downloadData()) updateData();
-        else epd_update();
+            while (!data_ready && retry++ < MAX_RETRY) data_ready = downloadData();
+            if (data_ready) updateData();
+            else renderNetworkError();
+        } 
+        else if (downloadData())
+            updateData();
+        else 
+            renderNetworkError();
     }
     else {
         renderStatusMsg("WiFi connection lost..");
     }
     epd_update();
-    otaLoop();
     delay(200);
+    otaLoop();
     suspendDevice();
 }
 

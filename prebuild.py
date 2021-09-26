@@ -21,7 +21,7 @@ def publish_firmware(source, target, env):
     firmware_path = str(source[0])
     firmware_name = basename(firmware_path)
     installer_path = 'releases/installer/canairio_installer/'
-    print("Uploading {0} to OTA server".format(firmware_name))
+    print("Uploading {0} to OTA server..".format(firmware_name))
     # subprocess.call(["./build", "clean"])
     subprocess.call(["cp", "%s" % firmware_path, "%s" % installer_path])
     subprocess.call(["./build", "otatrigger"])
