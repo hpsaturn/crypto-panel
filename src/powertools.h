@@ -78,5 +78,43 @@ double_t get_battery_percentage() {
     return percent;
 }
 
+/**
+ * Function that return the reason by which ESP32 has been awaken from sleep
+ */
+String get_wakeup_reason(){
+	esp_sleep_wakeup_cause_t wakeup_reason;
+	wakeup_reason = esp_sleep_get_wakeup_cause();
+    switch(wakeup_reason){
+        case ESP_SLEEP_WAKEUP_EXT0 : return "Wakeup caused by external signal using RTC_IO"; break;
+        case ESP_SLEEP_WAKEUP_EXT1 : return "Wakeup caused by external signal using RTC_CNTL"; break;
+        case ESP_SLEEP_WAKEUP_TIMER : return "Wakeup caused by timer"; break;
+        case ESP_SLEEP_WAKEUP_TOUCHPAD : return "Wakeup caused by touchpad"; break;
+        case ESP_SLEEP_WAKEUP_ULP : return "Wakeup caused by ULP program"; break;
+        default : return "Wakeup was not caused by deep sleep: "+String (wakeup_reason); break;
+    }
+}
 
+/**
+ * Function that returns the reason by which ESP32 has been reseted
+ */
+String get_reset_reason(int cpu_no) {
 
+  switch (rtc_get_reset_reason(cpu_no)){
+    case POWERON_RESET          : return  "Vbat power on reset"; break;
+    case SW_RESET               : return  "Software reset digital core"; break;
+    case OWDT_RESET             : return  "Legacy watch dog reset digital core"; break;
+    case DEEPSLEEP_RESET        : return  "Deep Sleep reset digital core"; break;
+    case SDIO_RESET             : return  "Reset by SLC module, reset digital core"; break;
+    case TG0WDT_SYS_RESET       : return  "Timer Group0 Watch dog reset digital core"; break;
+    case TG1WDT_SYS_RESET       : return  "Timer Group1 Watch dog reset digital core"; break;
+    case RTCWDT_SYS_RESET       : return  "RTC Watch dog Reset digital core"; break;
+    case INTRUSION_RESET        : return  "Instrusion tested to reset CPU"; break;
+    case TGWDT_CPU_RESET        : return  "Time Group reset CPU"; break;
+    case SW_CPU_RESET           : return  "Software reset CPU"; break;
+    case RTCWDT_CPU_RESET       : return  "RTC Watch dog Reset CPU"; break;
+    case EXT_CPU_RESET          : return  "for APP CPU, reseted by PRO CPU"; break;
+    case RTCWDT_BROWN_OUT_RESET : return  "Reset when the vdd voltage is not stable"; break;
+    case RTCWDT_RTC_RESET       : return  "RTC Watch dog reset digital core and rtc module"; break;
+    default : return "Unknown reset reason"; break;
+  }
+}

@@ -139,7 +139,18 @@ void updateData() {
         cursor_y = (45 * (i + 3));
         renderCryptoCard(cryptos[i]);
     }
-    // clearStatusMsg();
+}
+
+void displayDebugInfo (){
+    int reset_count = getInt(key_boot_count, 0);
+    String reset = "Reset reason: "   + get_reset_reason(0);
+    String wakup = "Wake up reason: " + get_wakeup_reason();
+    String boots = "Weak up count: " + String (reset_count) + "/" + String(EPD_REFRESH_COUNT);
+    String confg = "Deep sleep duration: " + String(DEEP_SLEEP_TIME);
+
+    drawString(EPD_WIDTH-20, STATUSY-120, wakup, RIGHT);
+    drawString(EPD_WIDTH-20, STATUSY-100, reset, RIGHT);
+    drawString(EPD_WIDTH-20, STATUSY- 80, boots, RIGHT); 
 }
 
 void drawRSSI(int x, int y, int rssi) {
@@ -170,9 +181,8 @@ void drawBattery(int x, int y) {
 }
 
 void getNTPDateTime() {
-    while (!timeClient.update()) {
-        timeClient.forceUpdate();
-    }
+    int retry = 0;
+    while (!timeClient.update() && retry++ < MAX_RETRY*3) timeClient.forceUpdate();
     formattedDate = timeClient.getFormattedDate();
     int splitT = formattedDate.indexOf("T");
     dayStamp = formattedDate.substring(0, splitT);
@@ -193,6 +203,7 @@ void displayStatusSection() {
     drawBattery(5, 14);
     displayGeneralInfoSection();
     drawRSSI(850, 14, getWifiRSSI());
+    displayDebugInfo();
     fillRect(1, 16, EPD_WIDTH, 2, Black);
     fillRect(1, EPD_HEIGHT-39, EPD_WIDTH, 3, Black); 
     renderStatusMsg("Downloading Crypto data..");
@@ -220,11 +231,11 @@ void eInkTask(void* pvParameters) {
         renderStatusMsg("LOADING...");
         title();
     }
-    else renderStatusMsg("====== Connecting ======");
+    else renderStatusMsg("========= Connecting =========");
     
     displayStatusSection();
 
-    if (boot_count++ > atoi(EDP_REFRESH_COUNT)) setInt(key_boot_count, 0);
+    if (boot_count++ > atoi(EPD_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
 
     vTaskDelete(NULL);
@@ -277,7 +288,7 @@ void setup() {
         timeClient.setTimeOffset(gmtOffset_sec);
 
         int retry = 0;
-        if (boot_count == 0) {  // only in the full refresh it have download retry
+        if (boot_count == 0) {  // Only in the full refresh it does retry download
             while (!data_ready && retry++ < MAX_RETRY) data_ready = downloadData();
             if (data_ready) updateData();
             else renderNetworkError();
@@ -289,7 +300,7 @@ void setup() {
     }
     else {
         delay(100);
-        renderStatusMsg("WiFi connection lost..");
+        renderStatusMsg("Last message: WiFi connection lost");
     }
     epd_update();
     delay(200);
