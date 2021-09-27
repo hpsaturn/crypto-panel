@@ -143,14 +143,14 @@ void updateData() {
 
 void displayDebugInfo (){
     int reset_count = getInt(key_boot_count, 0);
-    String reset = "Reset reason: "   + get_reset_reason(0);
-    String wakup = "Wake up reason: " + get_wakeup_reason();
-    String boots = "Weak up count: " + String (reset_count) + "/" + String(EPD_REFRESH_COUNT);
+    String wakup = get_wakeup_reason();
+    String reset = get_reset_reason(0);
+    String boots = "Weakup count: " + String (reset_count) + "/" + String(EPD_REFRESH_COUNT);
     String confg = "Deep sleep duration: " + String(DEEP_SLEEP_TIME);
 
-    drawString(EPD_WIDTH-20, STATUSY-120, wakup, RIGHT);
-    drawString(EPD_WIDTH-20, STATUSY-100, reset, RIGHT);
-    drawString(EPD_WIDTH-20, STATUSY- 80, boots, RIGHT); 
+    drawString(EPD_WIDTH-20, STATUSY-100, wakup, RIGHT);
+    drawString(EPD_WIDTH-20, STATUSY -80, reset, RIGHT);
+    drawString(EPD_WIDTH-20, STATUSY- 60, boots, RIGHT); 
 }
 
 void drawRSSI(int x, int y, int rssi) {
@@ -203,7 +203,7 @@ void displayStatusSection() {
     drawBattery(5, 14);
     displayGeneralInfoSection();
     drawRSSI(850, 14, getWifiRSSI());
-    displayDebugInfo();
+    if(devmod) displayDebugInfo();
     fillRect(1, 16, EPD_WIDTH, 2, Black);
     fillRect(1, EPD_HEIGHT-39, EPD_WIDTH, 3, Black); 
     renderStatusMsg("Downloading Crypto data..");
@@ -232,11 +232,11 @@ void eInkTask(void* pvParameters) {
         title();
     }
     else renderStatusMsg("========= Connecting =========");
-    
-    displayStatusSection();
 
     if (boot_count++ > atoi(EPD_REFRESH_COUNT)) setInt(key_boot_count, 0);
     else setInt(key_boot_count, boot_count++);
+
+    displayStatusSection();
 
     vTaskDelete(NULL);
 }
