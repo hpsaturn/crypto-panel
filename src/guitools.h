@@ -1,3 +1,8 @@
+// epd
+#include "epd_driver.h"
+#include "epd_highlevel.h"
+#include "rom/rtc.h"
+
 #include "opensans10b.h"
 #include "opensans14b.h"
 #include "opensans24b.h"
@@ -16,6 +21,9 @@
 #define STATUSW 600
 #define STATUSH 25
 #define STATUSC 50
+#define DEBUGIX EPD_WIDTH-20
+#define DEBUGIY STATUSY-30
+#define DEBUGIH 20
 
 #define TITLEY 80
 
@@ -27,10 +35,6 @@ EpdFont currentFont;
 
 uint8_t *fb;
 enum EpdDrawError err;
-
-// temperature around the eInk device
-int temperature = 22;
-
 int cursor_x;
 int cursor_y;
 
@@ -104,7 +108,7 @@ void setFont(EpdFont const &font) {
 
 void epd_update() {
     epd_poweron();
-    epd_hl_update_screen(&hl, MODE_GC16, temperature);
+    epd_hl_update_screen(&hl, MODE_GC16, EPD_AMBIENT_TEMPERATURE);
     delay(600);
     epd_poweroff();
 }
@@ -127,7 +131,7 @@ void renderStatusMsg(String msg) {
 }
 
 void eInkClear() {
-    epd_fullclear(&hl, temperature);
+    epd_fullclear(&hl,EPD_AMBIENT_TEMPERATURE);
     epd_hl_set_all_white(&hl);
 }
 
