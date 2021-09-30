@@ -22,24 +22,13 @@
 
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <SD.h>
-#include <SPI.h>
-#include <HTTPClient.h>
-#include <WiFiClient.h>
-#include <ArduinoJson.h>
-#include <NTPClient.h>
-#include <WiFiUdp.h>
 #include <wifi.hpp>
-#include <WiFiClientSecure.h>
 #include <Wire.h>
+
 #include "cryptos.h"
 #include "coingecko-api.h"
 #include "hal.h"
 #include "settings.h"
-// epd
-#include "epd_driver.h"
-#include "epd_highlevel.h"
-#include "rom/rtc.h"
 #include "guitools.h"
 #include "powertools.h"
 
@@ -54,12 +43,9 @@ const char *currency_base = "eur";
 // End of area you need to change
 // ----------------------------
 
-// extra debug msgs
-bool devmod = (bool)CORE_DEBUG_LEVEL;
 
-#define MAX_RETRY 2     // max retry download
-
-uint8_t *framebuffer;
+bool devmod = (bool)CORE_DEBUG_LEVEL; // extra debug msgs
+#define MAX_RETRY 2                   // max retry download
 
 // NTP time
 WiFiUDP ntpUDP;
@@ -67,8 +53,7 @@ NTPClient timeClient(ntpUDP);
 String formattedDate;
 String dayStamp;
 String timeStamp;
-// GMT Offset in seconds. UK normal time is GMT, so GMT Offset is 0, for US (-5Hrs) is typically -18000.
-int   gmtOffset_sec = 7200;
+int   gmtOffset_sec = 7200; // GMT Offset in seconds. GMT Offset is 0, US (-5Hrs) is typically -18000.
 
 void title() {
     setFont(OpenSans24B);
@@ -107,7 +92,7 @@ String getFormatCurrencyValue(double value){
 }
 
 void renderCryptoCard(Crypto crypto) {
-    if(devmod) Serial.printf("-->[eINK] Crypto Name  - %s\n",crypto.symbol.c_str());
+    if(devmod) Serial.printf("-->[eINK] Crypto Name - %s\n",crypto.symbol.c_str());
 
     setFont(OpenSans14B);
 
@@ -143,14 +128,19 @@ void updateData() {
 
 void displayDebugInfo (){
     int reset_count = getInt(key_boot_count, 0);
-    String wakup = get_wakeup_reason();
-    String reset = get_reset_reason(0);
+    String netip = "IP: " + WiFi.localIP().toString();
+    String netmc = "MAC:" + WiFi.macAddress();
     String boots = "Weakup count: " + String (reset_count) + "/" + String(EPD_REFRESH_COUNT);
     String confg = "Deep sleep duration: " + String(DEEP_SLEEP_TIME);
+    String wakup = get_wakeup_reason();
+    String reset = get_reset_reason(0);
 
-    drawString(EPD_WIDTH-20, STATUSY-100, wakup, RIGHT);
-    drawString(EPD_WIDTH-20, STATUSY -80, reset, RIGHT);
-    drawString(EPD_WIDTH-20, STATUSY- 60, boots, RIGHT); 
+    drawString(DEBUGIX, DEBUGIY-DEBUGIH*6, netip, RIGHT);
+    drawString(DEBUGIX, DEBUGIY-DEBUGIH*5, netmc, RIGHT);
+    drawString(DEBUGIX, DEBUGIY-DEBUGIH*4, boots, RIGHT); 
+    drawString(DEBUGIX, DEBUGIY-DEBUGIH*3, confg, RIGHT);
+    drawString(DEBUGIX, DEBUGIY-DEBUGIH*2, wakup, RIGHT);
+    drawString(DEBUGIX, DEBUGIY-DEBUGIH*1, reset, RIGHT);
 }
 
 void drawRSSI(int x, int y, int rssi) {
@@ -177,7 +167,6 @@ void drawBattery(int x, int y) {
     fillRect(x + 57, y - 13, 36 * percentage / 100.0, 11, Black);
     drawString(x, y, String((int)percentage) + "%", LEFT);
     drawString(10, STATUSY, "Batt:" + String(battery_voltage) + "v", LEFT);
-    //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
 }
 
 void getNTPDateTime() {
@@ -191,9 +180,8 @@ void getNTPDateTime() {
 
 void displayGeneralInfoSection() {
     // Uncomment the next line if the display of IP- and MAC-Adddress is wanted
-    //drawString(SCREEN_WIDTH - 150, 20, "IP=" + LocalIP + ",  MAC=" + WiFi.macAddress() ,RIGHT);
     // drawFastHLine(5, 30, SCREEN_WIDTH - 8, Black);
-    String rev = " rev0" + String(REVISION);
+    String rev = "rev" + String(REVISION);
     drawString(EPD_WIDTH-10, STATUSY, rev, RIGHT);
     getNTPDateTime();
     drawString(EPD_WIDTH / 2, 14, "Refreshed: " + dayStamp + " at " + timeStamp, CENTER);
@@ -210,7 +198,7 @@ void displayStatusSection() {
 }
 
 void onUpdateMessage(const char *msg){
-    renderStatusMsg("Updating firmware to rev 0"+String(msg));
+    renderStatusMsg("Updating firmware to rev 0"+String(msg)+"..");
     delay(200);
     setInt(key_boot_count, 0);
 }
@@ -233,8 +221,8 @@ void eInkTask(void* pvParameters) {
     }
     else renderStatusMsg("========= Connecting =========");
 
-    if (boot_count++ > atoi(EPD_REFRESH_COUNT)) setInt(key_boot_count, 0);
-    else setInt(key_boot_count, boot_count++);
+    if (boot_count++ > EPD_REFRESH_COUNT) setInt(key_boot_count, 0);
+    else setInt(key_boot_count, boot_count);
 
     displayStatusSection();
 
@@ -300,7 +288,9 @@ void setup() {
     }
     else {
         delay(100);
-        renderStatusMsg("Last message: WiFi connection lost");
+        // last try after to full clear
+        if(boot_count == 0 && wifiInit() && downloadData()) updateData();  
+        else renderStatusMsg("Last message: WiFi connection lost");
     }
     epd_update();
     delay(200);

@@ -30,7 +30,7 @@ bool wifiConnect(const char* ssid, const char* pass) {
     int wifi_retry = 0;
     WiFi.begin(ssid, pass);
     while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
-        delay(200);  // increment this delay on possible reconnect issues
+        delay(250);  // increment this delay on possible reconnect issues
     }
     delay(100);
     if (WiFi.isConnected()) {
