@@ -13,8 +13,19 @@ double_t battery_voltage = 0;
 
 void suspendDevice() {
     Serial.println("-->[eINK] shutdown..");
-    esp_sleep_enable_timer_wakeup(1000000LL * atoi(DEEP_SLEEP_TIME));
+    esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_TIME);
     esp_deep_sleep_start();
+}
+
+void rebootDevice() {
+    Serial.println("-->[MAIN] Watchdog reached, rebooting..");
+    esp_wifi_disconnect();
+    delay(200);
+    esp_wifi_stop();
+    delay(200);
+    esp_wifi_deinit();
+    delay(200);
+    ESP.restart();
 }
 
 void espShallowSleep(int ms) {
