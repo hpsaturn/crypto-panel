@@ -4,7 +4,7 @@
 
 #define BATTERY_MIN_V 3.3
 #define BATTERY_MAX_V 4.2
-#define BATTCHARG_MIN_V 4.65
+#define BATTCHARG_MIN_V 4.82
 #define BATTCHARG_MAX_V 4.91
 
 int vref = 1100;
