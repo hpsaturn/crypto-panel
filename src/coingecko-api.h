@@ -30,6 +30,23 @@ WiFiClientSecure client;
 
 const char* coingeckoSslFingerprint = "8925605d5044fcc0852b98d7d3665228684de6e2";
 
+struct SpiRamAllocator {
+  void* allocate(size_t size) {
+    return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
+  }
+
+  void deallocate(void* pointer) {
+    heap_caps_free(pointer);
+  }
+
+  void* reallocate(void* ptr, size_t new_size) {
+    return heap_caps_realloc(ptr, new_size, MALLOC_CAP_SPIRAM);
+  }
+};
+
+using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
+
+
 String combineCryptoCurrencies() {
     String cryptosString = "";
 
@@ -63,6 +80,8 @@ bool downloadBtcAndEthPrice() {
     client.setCACert(rootCACertificate);
 
     String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + combineCryptoCurrencies() + "&vs_currencies=btc%2Ceth";
+
+    // Serial.println("-->[cAPI] target: "+apiUrl);
 
     client.connect("api.coingecko.com", 443);
     http.begin(client, apiUrl);
@@ -112,6 +131,8 @@ bool downloadBaseData(String vsCurrency) {
     //client.setFingerprint(coingeckoSslFingerprint);
 
     String apiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + vsCurrency + "&ids=" + combineCryptoCurrencies() + "&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d";
+    
+    // Serial.println("-->[cAPI] target: "+apiUrl);
 
     client.connect("api.coingecko.com", 443);
 
@@ -167,3 +188,41 @@ bool downloadBaseData(String vsCurrency) {
     stopClient();
     return true;
 }
+
+bool downloadNewsData() {
+
+    http.useHTTP10(true);
+    WiFiClient client;
+
+    String apiUrl = "http://192.168.0.116:5000/posts";
+    
+    Serial.println("-->[cAPI] target news: "+apiUrl);
+
+    http.begin(client, apiUrl);
+
+    int code = http.GET();
+    if (code != HTTP_CODE_OK) {
+        Serial.printf("-->[cAPI] Error connecting to API while downloading news data. code: %i\n",code);
+        stopClient();
+        return false;
+    }
+
+    SpiRamJsonDocument doc(1048576);
+    DeserializationError error = deserializeJson(doc,http.getStream());
+
+    if (error) {
+        Serial.print(F("-->[cAPI] deserializeJson() failed: "));
+        Serial.println(error.f_str());
+        stopClient();
+        return false;
+    }
+
+    String author = doc["author"];
+
+    Serial.println("-->[cAPI] Author: "+author);
+    Serial.println("-->[cAPI] downloaded news data");
+    
+    stopClient();
+    return true;
+}
+

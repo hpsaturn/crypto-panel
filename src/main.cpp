@@ -252,6 +252,8 @@ void renderNetworkError() {
 }
 
 bool downloadData() {    
+    bool newsDataReady = downloadNewsData();
+    delay(100);
     bool baseDataReady = downloadBaseData(currency_base);
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();

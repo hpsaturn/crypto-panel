@@ -6,6 +6,7 @@
 #include "opensans10b.h"
 #include "opensans14b.h"
 #include "opensans24b.h"
+#include "opensans9b.h"
 #include "opensans8b.h"
 
 #define WAVEFORM EPD_BUILTIN_WAVEFORM
