@@ -251,14 +251,31 @@ void renderNetworkError() {
     renderStatusQueue(status);
 }
 
+void extractQr() {
+    uint32_t qrlenght = news.qrsize * news.qrsize;
+    uint8_t* rambf = (uint8_t*)ps_malloc(qrlenght/2);
+    for (unsigned i = 0, uchr; i < qrlenght; i += 2) {
+        sscanf(news.qr + i, "%2x", &uchr);  // conversion
+        rambf[i / 2] = uchr;                // save as char
+    }
+    drawQrImage(20, 250, news.qrsize, rambf);
+    free(rambf);
+}
+
 bool downloadData() {    
-    bool newsDataReady = downloadNewsData();
-    delay(100);
+    
     bool baseDataReady = downloadBaseData(currency_base);
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
-    if(baseDataReady && cryptoDataReady) renderVersion();
-    return baseDataReady && cryptoDataReady;
+    delay(100);
+    bool newsDataReady = downloadNewsData();
+
+    if(newsDataReady) extractQr();
+
+    bool success = baseDataReady && cryptoDataReady && newsDataReady;
+
+    if(success) renderVersion();
+    return success;
 }
 
 void setup() {
@@ -266,7 +283,7 @@ void setup() {
     correct_adc_reference();
     setupGUITask();
 
-    esp_task_wdt_init(30, true);
+    esp_task_wdt_init(40, true);
     esp_task_wdt_add(NULL);
 
     int boot_count = getInt(key_boot_count, 0);

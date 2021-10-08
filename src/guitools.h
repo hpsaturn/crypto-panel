@@ -64,6 +64,18 @@ void drawCircle(int x0, int y0, int r, uint8_t color) {
     epd_draw_circle(x0, y0, r, color, fb);
 }
 
+void drawQrImage(int x, int y, int size, const uint8_t *data) {
+    EpdRect qrrect = {
+      .x = x,
+      .y = y,
+      .width = size,
+      .height = size,
+    };
+
+    // epd_copy_to_framebuffer(qrrect, data, epd_hl_get_framebuffer(&hl));
+    epd_draw_rotated_image(qrrect,data,fb);
+}
+
 void drawRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     EpdRect area = {
         .x = x,

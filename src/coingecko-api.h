@@ -217,11 +217,17 @@ bool downloadNewsData() {
         return false;
     }
 
-    String author = doc["author"];
-
-    Serial.println("-->[cAPI] Author: "+author);
-    Serial.println("-->[cAPI] downloaded news data");
+    news.title = doc["title"].as<String>();
+    news.author = doc["author"].as<String>();
+    news.summary = doc["summary"].as<String>();
+    news.link = doc["link"].as<String>();
+    news.published = doc["published"].as<String>();
+    news.qrsize = doc["qrsize"].as<uint32_t>();
+    news.qr = doc["qr"];
     
+    Serial.println("-->[cAPI] News Author: "+news.author);
+    Serial.println("-->[cAPI] downloaded news data");
+
     stopClient();
     return true;
 }

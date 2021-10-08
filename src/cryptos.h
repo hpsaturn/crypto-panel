@@ -13,6 +13,17 @@ struct Crypto
   double weekChange;
 };
 
+struct News
+{
+  String author;
+  String title;
+  String summary;
+  String published;
+  String link;
+  uint32_t qrsize;
+  const char* qr;
+};
+
 // ----------------------------
 // Coin id list - adjust it to meet your interests
 //
@@ -27,3 +38,5 @@ Crypto cryptos[] = {
  };
 
 int cryptosCount = (sizeof(cryptos) / sizeof(cryptos[0]));
+
+News news;
