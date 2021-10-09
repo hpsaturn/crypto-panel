@@ -202,16 +202,18 @@ bool downloadNewsData() {
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
-        Serial.printf("-->[cAPI] Error connecting to API while downloading news data. code: %i\n",code);
+        Serial.printf("-->[nAPI] Error connecting to API while downloading news data. code: %i\n",code);
         stopClient();
         return false;
     }
 
-    SpiRamJsonDocument doc(1048576);
+    logMemory();
+    SpiRamJsonDocument doc(256000);
+    logMemory();
     DeserializationError error = deserializeJson(doc,http.getStream());
 
     if (error) {
-        Serial.print(F("-->[cAPI] deserializeJson() failed: "));
+        Serial.print(F("-->[nAPI] deserializeJson() failed: "));
         Serial.println(error.f_str());
         stopClient();
         return false;
@@ -225,10 +227,11 @@ bool downloadNewsData() {
     news.qrsize = doc["qrsize"].as<uint32_t>();
     news.qr = doc["qr"];
     
-    Serial.println("-->[cAPI] News Author: "+news.author);
-    Serial.println("-->[cAPI] downloaded news data");
+    Serial.println("-->[nAPI] News Author: "+news.author);
+    Serial.println("-->[nAPI] downloaded news data");
 
     stopClient();
+    logMemory();
     return true;
 }
 

@@ -143,6 +143,15 @@ void renderStatusMsg(String msg) {
     epd_update();
 }
 
+void renderNewsQueue() {
+    setFont(OpenSans10B);
+    drawString(40, 290, news.title, LEFT);
+    setFont(OpenSans9B);
+    drawString(40, 320, news.author, LEFT);
+    setFont(OpenSans8B);
+    drawString(40, 340, news.published, LEFT);
+}
+
 void eInkClear() {
     epd_fullclear(&hl,EPD_AMBIENT_TEMPERATURE);
     epd_hl_set_all_white(&hl);

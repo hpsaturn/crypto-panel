@@ -5,5 +5,5 @@
 #define SD_CS 15
 
 void logMemory() {
-  Serial.printf("-->[HAL] Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
+  Serial.printf("-->[IHAL] Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
 }

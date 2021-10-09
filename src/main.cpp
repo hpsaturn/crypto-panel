@@ -25,9 +25,9 @@
 #include <wifi.hpp>
 #include <Wire.h>
 
+#include "hal.h"
 #include "cryptos.h"
 #include "coingecko-api.h"
-#include "hal.h"
 #include "settings.h"
 #include "guitools.h"
 #include "powertools.h"
@@ -251,15 +251,19 @@ void renderNetworkError() {
     renderStatusQueue(status);
 }
 
-void extractQr() {
+void extractNews() {
+    logMemory();
     uint32_t qrlenght = news.qrsize * news.qrsize;
     uint8_t* rambf = (uint8_t*)ps_malloc(qrlenght/2);
     for (unsigned i = 0, uchr; i < qrlenght; i += 2) {
         sscanf(news.qr + i, "%2x", &uchr);  // conversion
         rambf[i / 2] = uchr;                // save as char
     }
-    drawQrImage(20, 250, news.qrsize, rambf);
+    renderNewsQueue();
+    drawQrImage(EPD_WIDTH-90-news.qrsize, 300, news.qrsize, rambf);
+    logMemory();
     free(rambf);
+    logMemory();
 }
 
 bool downloadData() {    
@@ -268,11 +272,10 @@ bool downloadData() {
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
     delay(100);
-    bool newsDataReady = downloadNewsData();
 
-    if(newsDataReady) extractQr();
+    if(downloadNewsData()) extractNews();
 
-    bool success = baseDataReady && cryptoDataReady && newsDataReady;
+    bool success = baseDataReady && cryptoDataReady;
 
     if(success) renderVersion();
     return success;
