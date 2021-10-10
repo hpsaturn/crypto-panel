@@ -206,6 +206,7 @@ void onUpdateMessage(const char *msg){
 void eInkTask(void* pvParameters) {
 
     eInkInit();
+    logMemory();
     
     int boot_count = getInt(key_boot_count, 0);
     Serial.printf("-->[eINK] boot_count: %i\n",boot_count);
@@ -252,18 +253,26 @@ void renderNetworkError() {
 }
 
 void extractNews() {
-    logMemory();
+    if(devmod) Serial.println("-->[nAPI] News Author: "+news.author);
+
+
     uint32_t qrlenght = news.qrsize * news.qrsize;
     uint8_t* rambf = (uint8_t*)ps_malloc(qrlenght/2);
     for (unsigned i = 0, uchr; i < qrlenght; i += 2) {
         sscanf(news.qr + i, "%2x", &uchr);  // conversion
         rambf[i / 2] = uchr;                // save as char
     }
-    renderNewsQueue();
-    drawQrImage(EPD_WIDTH-90-news.qrsize, 300, news.qrsize, rambf);
-    logMemory();
+    setFont(OpenSans14B);
+    drawString(40, 285, news.title, LEFT);
+    setFont(OpenSans10B);
+    drawString(40, 370, news.summary, LEFT); 
+    setFont(OpenSans8B);
+    drawString(40, 460, news.published, LEFT);
+    drawString(700,460, news.author, RIGHT);
+
+    drawQrImage(EPD_WIDTH-90-news.qrsize, 335, news.qrsize, rambf);
+
     free(rambf);
-    logMemory();
 }
 
 bool downloadData() {    
@@ -315,6 +324,7 @@ void setup() {
         else renderStatusMsg("Last message: WiFi connection lost");
     }
     epd_update();
+    logMemory();
     delay(200);
     otaLoop();
     suspendDevice();

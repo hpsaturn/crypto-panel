@@ -93,8 +93,6 @@ bool downloadBtcAndEthPrice() {
         return false;
     }
 
-    Serial.println("-->[cAPI] downloaded crypto data");
-
     StaticJsonDocument<512> filter;
 
     for (int i = 0; i < cryptosCount; i++) {
@@ -111,6 +109,8 @@ bool downloadBtcAndEthPrice() {
         stopClient();
         return false;
     }
+
+    Serial.println("-->[cAPI] downloaded crypto data");
 
     for (int i = 0; i < cryptosCount; i++) {
         JsonObject json = doc[cryptos[i].apiName];
@@ -145,8 +145,6 @@ bool downloadBaseData(String vsCurrency) {
         return false;
     }
 
-    Serial.println("-->[cAPI] downloaded base data");
-
     StaticJsonDocument<512> filter;
 
     for (int i = 0; i < cryptosCount; i++) {
@@ -166,6 +164,8 @@ bool downloadBaseData(String vsCurrency) {
         stopClient();
         return false;
     }
+
+    Serial.println("-->[cAPI] downloaded base data");
 
     for (int i = 0; i < cryptosCount; i++) {
         JsonObject json = doc[i];
@@ -207,10 +207,9 @@ bool downloadNewsData() {
         return false;
     }
 
-    logMemory();
     SpiRamJsonDocument doc(256000);
-    logMemory();
     DeserializationError error = deserializeJson(doc,http.getStream());
+    
 
     if (error) {
         Serial.print(F("-->[nAPI] deserializeJson() failed: "));
@@ -218,20 +217,19 @@ bool downloadNewsData() {
         stopClient();
         return false;
     }
-
-    news.title = doc["title"].as<String>();
-    news.author = doc["author"].as<String>();
-    news.summary = doc["summary"].as<String>();
-    news.link = doc["link"].as<String>();
-    news.published = doc["published"].as<String>();
-    news.qrsize = doc["qrsize"].as<uint32_t>();
-    news.qr = doc["qr"];
     
-    Serial.println("-->[nAPI] News Author: "+news.author);
     Serial.println("-->[nAPI] downloaded news data");
 
+    news.title = doc["title"] | "";
+    news.author = doc["author"] | "";
+    news.summary = doc["summary"] | "";
+    news.link = doc["link"] | "";
+    news.published = doc["published"] | "";
+    news.qrsize = doc["qrsize"].as<uint32_t>() | 0;
+    news.qr = doc["qr"];
+    
     stopClient();
-    logMemory();
+
     return true;
 }
 
