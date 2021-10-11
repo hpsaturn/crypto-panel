@@ -267,8 +267,8 @@ void extractNews() {
     setFont(OpenSans10B);
     drawString(40, 370, news.summary, LEFT); 
     setFont(OpenSans8B);
-    drawString(40, 460, news.published, LEFT);
-    drawString(700,460, news.author, RIGHT);
+    drawString(40, 470, news.published, LEFT);
+    drawString(700,470, news.author, RIGHT);
 
     drawQrImage(EPD_WIDTH-90-news.qrsize, 335, news.qrsize, rambf);
 
@@ -281,7 +281,9 @@ bool downloadData() {
     delay(100);
     bool cryptoDataReady = downloadBtcAndEthPrice();
     delay(100);
-
+    
+    int boot_count = getInt(key_boot_count, 0);
+    // if(boot_count % 2 == 0 && downloadNewsData()) extractNews();
     if(downloadNewsData()) extractNews();
 
     bool success = baseDataReady && cryptoDataReady;
