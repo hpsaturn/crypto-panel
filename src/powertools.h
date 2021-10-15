@@ -3,9 +3,9 @@
 #include "esp_sleep.h"
 
 #define BATTERY_MIN_V 3.3
-#define BATTERY_MAX_V 4.2
-#define BATTCHARG_MIN_V 4.82
-#define BATTCHARG_MAX_V 4.91
+#define BATTERY_MAX_V 4.1
+#define BATTCHARG_MIN_V 4.65
+#define BATTCHARG_MAX_V 4.87
 
 int vref = 1100;
 float curv = 0;
@@ -57,12 +57,12 @@ double_t _calcPercentage(double_t volts, float max, float min) {
     return percentage;
 }
 
-bool battIsCharging() {
-    return curv > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
+bool battIsCharging(double_t volts) {
+    return volts > BATTERY_MAX_V + (BATTCHARG_MIN_V - BATTERY_MAX_V ) / 2;
 }
 
 double_t battCalcPercentage(double_t volts) {
-    if (battIsCharging()){
+    if (battIsCharging(volts)){
       return _calcPercentage(volts,BATTCHARG_MAX_V,BATTCHARG_MIN_V);
     } else {
       return _calcPercentage(volts,BATTERY_MAX_V,BATTERY_MIN_V);
