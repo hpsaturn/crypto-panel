@@ -2,7 +2,7 @@
 
 LilyGo EDP47 Crypto currency Tracker
 
-![preview](images/preview.gif)
+![preview](images/photo.jpg)
 ## Prerequisites
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
@@ -29,6 +29,17 @@ pio run --target upload
 
 ## Changelog
 
+**20211106 rev145**
+
+```
+Added new News API and QR payload:
+
+  - News API migrated to real server 
+  - fix battery icon issue when is charging on USB 
+  - first version with API for get QR link of news
+  - added reboot method and improved global config
+  - many memory improvements on QR allocation
+``` 
 
 **20210926 rev100**
 
