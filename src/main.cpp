@@ -6,14 +6,10 @@
  * https://www.youtube.com/techiesms
  * Author: techiesms
  * 
- * PlatformIO improvement
- * Author: @hpsaturn
- * 
- * Revision
- * --------------------------------------------------------
- * 0000 Exported credentials to globar vars on Pio project
- * 0001 Added status (battery) and some minors
- * 0002 Added FreeRTOS task for static GUI and complete refactor
+ * PlatformIO improvement and News API integration:
+ * https://github.com/hpsaturn/crypto-currency
+ * Author: @hpsaturn 
+ * 2021
  */
 
 #ifndef BOARD_HAS_PSRAM

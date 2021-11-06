@@ -78,28 +78,19 @@ Migration from LilyGo forked library to vroland/epdiy repo
 **20210922 rev039 (First version)**
 
 ```
-  Added support to PlatformIO and improved code.
+Added support to PlatformIO and improved code.
 
   - improved speed adding a RTOS task for eINK static tasks
   - refactored and improved PlatformIO ini file with heredity
   - added a basic wifi manager from CanAir.IO project
   - added battery level and reset detection for full refresh
   - deep sleep improvement with full refresh after x boots
-  - Original code: https://github.com/techiesms/
-  
+  - Original code: https://github.com/techiesms/  
 ``` 
 
+## Credits
 
+- Thanks to @techiesms by first idea and [original project](https://github.com/techiesms/) for Arduino IDE
+- Thanks to @hacksics from some icons and fonts of project [HA dashboard project](https://github.com/hacksics/lilygo-t5-47-ha)
 
-
-
-
-
-
-
-
-
-
-
-
-
+ 
