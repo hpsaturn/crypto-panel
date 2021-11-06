@@ -27,6 +27,17 @@ On `platformio.ini` set power saving settings and temperature around the device
 pio run --target upload
 ```
 
+## TODO
+
+- [x] improve TTGO eInk library to original library
+- [x] remote OTA updates via PlatformIO and FOTA
+- [x] new API for Crypto News (RSS)
+- [x] diplay news feed and news link with a QR code
+- [ ] set WiFi credentials via JSON on flash user partition
+- [ ] run FOTA update without change WiFi credentials
+- [ ] Bluetooth alternative for set preferences
+- [ ] Easy firmware upload on first case use with CanAirIO loader
+
 ## Changelog
 
 **20211106 rev145**
