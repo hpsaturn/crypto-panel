@@ -18,8 +18,8 @@ export PIO_WIFI_SSID='MyWifiSSID'
 
 ### Config:
 
-On `cryptos.h` choose your currencies.  
-On `platformio.ini` you can change the power saving settings
+On `cryptos.h` choose your currencies in [this lines](https://github.com/hpsaturn/crypto-currency/blob/master/src/cryptos.h#L34-L38)  
+On `platformio.ini` set power saving settings and temperature around the device
 
 ## Build and Upload
 
