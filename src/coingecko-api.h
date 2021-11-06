@@ -194,7 +194,7 @@ bool downloadNewsData() {
     http.useHTTP10(true);
     WiFiClient client;
 
-    String apiUrl = "http://192.168.0.116:5000/posts";
+    String apiUrl = "http://influxdb.canair.io:8080/posts";
     
     Serial.println("-->[cAPI] target news: "+apiUrl);
 
@@ -207,7 +207,7 @@ bool downloadNewsData() {
         return false;
     }
 
-    SpiRamJsonDocument doc(256000);
+    SpiRamJsonDocument doc(128000);
     DeserializationError error = deserializeJson(doc,http.getStream());
     
 

@@ -43,8 +43,6 @@ const char *currency_base = "eur";
 // End of area you need to change
 // ----------------------------
 
-
-bool devmod = (bool)CORE_DEBUG_LEVEL; // extra debug msgs
 #define MAX_RETRY 2                   // max retry download
 
 // NTP time
@@ -320,7 +318,7 @@ void setup() {
     }
     epd_update();
     logMemory();
-    delay(200);
+    delay(300);
     otaLoop();
     suspendDevice();
 }

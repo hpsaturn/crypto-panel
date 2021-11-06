@@ -4,6 +4,9 @@
 #define SD_SCLK 14
 #define SD_CS 15
 
+
+bool devmod = (bool)CORE_DEBUG_LEVEL; // extra debug msgs
+
 void logMemory() {
-  Serial.printf("-->[IHAL] Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
+  if(devmod) Serial.printf("-->[IHAL] Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
 }
