@@ -38,6 +38,15 @@ pio run --target upload
 - [ ] Bluetooth alternative for set preferences
 - [ ] Easy firmware upload on first case use with CanAirIO loader
 
+## Donations
+
+- Via **Ethereum**:
+- 0x1779cD3b85b6D8Cf1A5886B2CF5C53a0E072C108
+- Be a patron: [Patreon](https://www.patreon.com/hpsaturn), [Github Sponsors](https://github.com/sponsors/hpsaturn) o [LiberaPay](https://liberapay.com/hpsaturn)
+- Inviting me **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)
+
+<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
+
 ## Changelog
 
 **20211106 rev145**
