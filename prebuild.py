@@ -1,5 +1,6 @@
-# build.py
-# pre-build script, setting up build environment and fetch hal file for user's board
+# Author: @hpsaturn - 2021
+# prebuild.py
+# pre-build script, setting up build environment and fetch flavor board information
 
 import sys
 import os
