@@ -25,4 +25,4 @@ jobs:
           platformio update
       - name: Build test
         run:
-          pio run
+          pio run -e epd47esp32

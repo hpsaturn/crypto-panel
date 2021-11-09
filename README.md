@@ -1,3 +1,5 @@
+[![PlatformIO](https://github.com/hpsaturn/crypto-currency/workflows/PlatformIO/badge.svg)](https://github.com/hpsaturn/crypto-currency/actions/) ![ViewCount](https://views.whatilearened.today/views/github/hpsaturn/crypto-currency.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/hpsaturn.svg?logo=liberapay)](https://liberapay.com/hpsaturn)
+
 # eInk Crypto Currency
 
 LilyGo EDP47 ESP32 Crypto currency News and Tracker
@@ -45,7 +47,7 @@ pio run --target upload
 - Be a patron: [Patreon](https://www.patreon.com/hpsaturn), [Github Sponsors](https://github.com/sponsors/hpsaturn) o [LiberaPay](https://liberapay.com/hpsaturn)
 - Inviting me **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)
 
-<a href="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/kike-canaries/canairio_firmware/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
+<a href="https://raw.githubusercontent.com/hpsaturn/crypto-currency/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/hpsaturn/crypto-currency/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
 
 ## Changelog
 
