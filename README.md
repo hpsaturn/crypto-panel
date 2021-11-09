@@ -47,7 +47,7 @@ pio run --target upload
 - Be a patron: [Patreon](https://www.patreon.com/hpsaturn), [Github Sponsors](https://github.com/sponsors/hpsaturn) o [LiberaPay](https://liberapay.com/hpsaturn)
 - Inviting me **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)
 
-<a href="https://raw.githubusercontent.com/hpsaturn/crypto-currency/master/images/ethereum_donation_address.png" target="_blank"><img src="https://raw.githubusercontent.com/hpsaturn/crypto-currency/master/images/ethereum_donation_address.png" align="center_horizontal" width="180" ></a>
+<a href="images/ethereum_donation_address.png" target="_blank" style="padding-left: 40px" ><img src="images/ethereum_donation_address.png" width="180" ></a>
 
 ## Changelog
 
