@@ -1,6 +1,6 @@
 # eInk Crypto Currency
 
-LilyGo EDP47 Crypto currency Tracker
+LilyGo EDP47 ESP32 Crypto currency News and Tracker
 
 ![preview](images/photo.jpg)
 ## Prerequisites
@@ -36,7 +36,7 @@ pio run --target upload
 - [ ] set WiFi credentials via JSON on flash user partition
 - [ ] run FOTA update without change WiFi credentials
 - [ ] Bluetooth alternative for set preferences
-- [ ] Easy firmware upload on first case use with CanAirIO loader
+- [ ] Easy firmware upload on first case use with [CanAirIO loader](https://github.com/hpsaturn/esp32-canairio-loader)
 
 ## Donations
 
