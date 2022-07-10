@@ -279,10 +279,31 @@ bool downloadData() {
     return success;
 }
 
+class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
+  void onWifiStatus(bool isConnected) {
+    
+  }
+
+  // Callback for extend the help menu.
+  void onHelpShow() {
+    Serial.println("\r\nCustom commands:\r\n");
+    Serial.println("blink <times> <millis>\tLED blink x times each x millis");
+    Serial.println("echo \"message\"\t\tEcho the input message");
+    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+  }
+};
+
 void setup() {
     Serial.begin(115200);
     correct_adc_reference();
     setupGUITask();
+
+    wcli.setCallback(new mESP32WifiCLICallbacks());
+    wcli.begin();
+
+    while(!wcli.loadAP(1)) {
+        wcli.loop();
+    }
 
     esp_task_wdt_init(40, true);
     esp_task_wdt_add(NULL);

@@ -40,23 +40,7 @@ bool wifiConnect(const char* ssid, const char* pass) {
     }
 }
 
-class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
-  void onWifiStatus(bool isConnected) {
-    
-  }
-
-  // Callback for extend the help menu.
-  void onHelpShow() {
-    Serial.println("\r\nCustom commands:\r\n");
-    Serial.println("blink <times> <millis>\tLED blink x times each x millis");
-    Serial.println("echo \"message\"\t\tEcho the input message");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
-  }
-};
-
-bool wifiInit() {
-    wcli.setCallback(new mESP32WifiCLICallbacks());
-    wcli.begin();
+bool wifiInit() { 
     return wcli.wifiValidation();
 }
 
