@@ -41,6 +41,9 @@ const char *currency_base = "eur";
 
 #define MAX_RETRY 2                   // max retry download
 
+
+bool devmod = (bool)CORE_DEBUG_LEVEL; // extra debug msgs
+
 // NTP time
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP);
@@ -48,6 +51,10 @@ String formattedDate;
 String dayStamp;
 String timeStamp;
 int   gmtOffset_sec = 7200; // GMT Offset in seconds. GMT Offset is 0, US (-5Hrs) is typically -18000.
+
+void logMemory() {
+  if(devmod) Serial.printf("-->[IHAL] Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
+}
 
 void title() {
     setFont(OpenSans24B);
@@ -301,7 +308,7 @@ void setup() {
     wcli.setCallback(new mESP32WifiCLICallbacks());
     wcli.begin();
 
-    while(!wcli.loadAP(1)) {
+    while(!wcli.loadAP(1)) { // force to configure Wifi AP
         wcli.loop();
     }
 

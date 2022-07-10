@@ -10,6 +10,7 @@
 int vref = 1100;
 float curv = 0;
 double_t battery_voltage = 0;
+gpio_num_t FIRST_BTN_PIN = GPIO_NUM_39;
 
 void suspendDevice() {
     Serial.println("-->[eINK] shutdown..");
