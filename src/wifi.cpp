@@ -21,42 +21,13 @@ void otaInit() {
     ota.setup("EPD47ESP32", "epd47esp32");
 }
 
-bool wifiConnect(const char* ssid, const char* pass) {
-    Serial.printf("-->[WIFI] connecting to %s\n",ssid);
-    int wifi_retry = 0;
-    WiFi.begin(ssid, pass);
-    while (!WiFi.isConnected() && wifi_retry++ <= WIFI_RETRY_CONNECTION) {
-        delay(250);  // increment this delay on possible reconnect issues
-    }
-    delay(100);
-    if (WiFi.isConnected()) {
-        Serial.print("-->[WIFI] IP: ");
-        Serial.println(WiFi.localIP());
-        otaInit();
-        return true;
-    } else {
-        Serial.println("-->[WIFI] disconnected!");
-        return false;
-    }
-}
-
 bool wifiInit() { 
-    return wcli.wifiValidation();
-}
-
-void wifiStop() {
-    Serial.println("-->[WIFI] Disconnecting..");
-    WiFi.disconnect(true);
-    delay(100);
-}
-
-void wifiRestart() {
-    wifiStop();
-    wifiInit();
+    bool wifi_connected = WiFi.status() == WL_CONNECTED;
+    if(wifi_connected) otaInit();
+    return wifi_connected;
 }
 
 int getWifiRSSI() {
     if (WiFi.isConnected()) return WiFi.RSSI();
     else return 0;
 }
-
