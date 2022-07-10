@@ -1,9 +1,5 @@
 #include <wifi.hpp>
 
-// WiFi credentials (see platformio.ini)
-const char *ssid = WIFI_SSID;
-const char *password = WIFI_PASS;
-
 int rssi = 0;
 
 /******************************************************************************
@@ -44,8 +40,24 @@ bool wifiConnect(const char* ssid, const char* pass) {
     }
 }
 
+class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
+  void onWifiStatus(bool isConnected) {
+    
+  }
+
+  // Callback for extend the help menu.
+  void onHelpShow() {
+    Serial.println("\r\nCustom commands:\r\n");
+    Serial.println("blink <times> <millis>\tLED blink x times each x millis");
+    Serial.println("echo \"message\"\t\tEcho the input message");
+    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+  }
+};
+
 bool wifiInit() {
-    return wifiConnect(WIFI_SSID,WIFI_PASS);
+    wcli.setCallback(new mESP32WifiCLICallbacks());
+    wcli.begin();
+    return wcli.wifiValidation();
 }
 
 void wifiStop() {
