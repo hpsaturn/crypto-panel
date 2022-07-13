@@ -10,7 +10,7 @@ String getKeyName(int cryptoId) {
   return String(key);
 }
 
-void listCryptos() {
+void listCryptos(bool load = false) {
   cfg.begin(app_name, RO_MODE);
   int cryptoId = 1;
   Serial.println("\nSaved Crypto currencies:\n");
@@ -18,8 +18,11 @@ void listCryptos() {
     String key = getKeyName(cryptoId);
     String crypto = cfg.getString(key.c_str(), "");
     Serial.printf("%d: [%s]\r\n", cryptoId, crypto.c_str());
+    if(load) cryptos[cryptoId-1].apiName = crypto;
+    cryptosCount = cryptoId;
     cryptoId++;
   }
+  Serial.println("");
   cfg.end();
 }
 
@@ -37,17 +40,54 @@ bool saveCrypto(String crypto){
   cfg.putString(key.c_str(), crypto);
   cfg.putInt("crypto_count", cryptoId + 1);
   cfg.end();
+  cryptos[cryptoId].apiName = crypto;
+  cryptosCount = cryptoId + 1;
   return true;
 }
 
+bool deleteCrypto(String crypto){
+  if (crypto.length() == 0) {
+    Serial.println("\nerror: crypto is empty, please pass a valid crypto name");
+    return false;
+  }
+  int cryptoId = 1;
+  bool dropped = false;
+  cfg.begin(app_name, RW_MODE);
+  while (cfg.isKey(getKeyName(cryptoId).c_str())) {
+    String key = getKeyName(cryptoId++);
+    String crypto_ = cfg.getString(key.c_str(), "");
+    if (!dropped && crypto_.equals(crypto)) {
+      Serial.printf("Deleting crypto %d %s\r\n", cryptoId - 1, key.c_str());
+      cfg.remove(key.c_str());
+      dropped = true;
+      int cryptoId_count = cfg.getInt("crypto_count", 0);
+      cfg.putInt("crypto_count", cryptoId_count - 1);
+      continue;
+    }
+    if (dropped) {
+      String crypto_drop = cfg.getString(key.c_str(), "");
+      String key_drop = getKeyName(cryptoId - 2);
+      cfg.putString(key_drop.c_str(), crypto_drop);
+      cfg.remove(key.c_str());
+      // selectAP(cryptoId - 2);
+    }
+  }
+  cfg.end();
+  if (!dropped) {
+    Serial.println("\nerror: crypto not found");
+    return false;
+  }
+  return dropped;
+}
+
 void setInt(String key, int value){
-    cfg.begin(app_name, false);
+    cfg.begin(app_name, RW_MODE);
     cfg.putInt(key.c_str(), value);
     cfg.end();
 }
 
 int32_t getInt(String key, int defaultValue){
-    cfg.begin(app_name, false);
+    cfg.begin(app_name, RO_MODE);
     int32_t out = cfg.getInt(key.c_str(), defaultValue);
     cfg.end();
     return out;
