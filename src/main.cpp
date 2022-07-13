@@ -42,8 +42,6 @@ const char *currency_base = "eur";
 
 #define MAX_RETRY 2  // max retry download
 
-gpio_num_t SETUP_BTN_PIN = GPIO_NUM_39;
-
 bool devmod = (bool)CORE_DEBUG_LEVEL;  // extra debug msgs
 bool BtnConfigIsPressed;
 

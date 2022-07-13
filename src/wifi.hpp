@@ -14,7 +14,6 @@ void otaLoop();
 bool wifiCheck();
 bool wifiInit();
 void wifiStop();
-void wifiRestart();
 int  getWifiRSSI();
 
 void otaMessageCb(voidMessageCbFn cb);
