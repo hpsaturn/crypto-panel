@@ -88,7 +88,7 @@ bool downloadBtcAndEthPrice() {
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
-        Serial.printf("-->[cAPI] Error connecting to API while downloading BTC and ETH data. code: %i\n",code);
+        Serial.printf("-->[cAPI] Error connecting to API while downloading BTC and ETH data. code: %i\r\n",code);
         stopClient();
         return false;
     }
@@ -140,7 +140,7 @@ bool downloadBaseData(String vsCurrency) {
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
-        Serial.printf("-->[cAPI] Error connecting to API while downloading base data. code: %i\n",code);
+        Serial.printf("-->[cAPI] Error connecting to API while downloading base data. code: %i\r\n",code);
         stopClient();
         return false;
     }
@@ -202,7 +202,7 @@ bool downloadNewsData() {
 
     int code = http.GET();
     if (code != HTTP_CODE_OK) {
-        Serial.printf("-->[nAPI] Error connecting to API while downloading news data. code: %i\n",code);
+        Serial.printf("-->[nAPI] Error connecting to API while downloading news data. code: %i\r\n",code);
         stopClient();
         return false;
     }

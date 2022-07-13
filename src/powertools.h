@@ -74,19 +74,13 @@ double_t get_battery_percentage() {
     // When reading the battery voltage, POWER_EN must be turned on
     epd_poweron();
     delay(50);
-
     uint16_t v = analogRead(BATT_PIN);
     battery_voltage = ((double_t)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
-    Serial.println("-->[vADC] " + String(battery_voltage) + "v");
-
     double_t percent = battCalcPercentage(battery_voltage);
-
-    String voltage = "-->[vADC] Battery charge at " + String(percent) + "%";
-    Serial.println(voltage);
-
+    log_i("[vADC] %dv",battery_voltage);
+    log_i("[vADC] Battery charge at %d%s", percent, "%");
     epd_poweroff();
     delay(50);
-
     return percent;
 }
 

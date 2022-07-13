@@ -22,8 +22,8 @@
 
 #include <wifi.hpp>
 
-#include "cryptos.h"
-#include "coingecko-api.h"
+#include "models.h"
+#include "apis.h"
 #include "settings.h"
 #include "guitools.h"
 #include "hal.h"
@@ -45,6 +45,7 @@ const char *currency_base = "eur";
 gpio_num_t SETUP_BTN_PIN = GPIO_NUM_39;
 
 bool devmod = (bool)CORE_DEBUG_LEVEL;  // extra debug msgs
+bool BtnConfigIsPressed;
 
 // NTP time
 WiFiUDP ntpUDP;
@@ -55,7 +56,7 @@ String timeStamp;
 int gmtOffset_sec = 7200;  // GMT Offset in seconds. GMT Offset is 0, US (-5Hrs) is typically -18000.
 
 void logMemory() {
-  if (devmod) Serial.printf("-->[IHAL] Used PSRAM: %d\n", ESP.getPsramSize() - ESP.getFreePsram());
+  if (devmod) Serial.printf("-->[IHAL] Used PSRAM: %d\r\n", ESP.getPsramSize() - ESP.getFreePsram());
 }
 
 void title() {
@@ -95,7 +96,7 @@ String getFormatCurrencyValue(double value) {
 }
 
 void renderCryptoCard(Crypto crypto) {
-  if (devmod) Serial.printf("-->[eINK] Crypto Name - %s\n", crypto.symbol.c_str());
+  if (devmod) Serial.printf("-->[eINK] Crypto Name - %s\r\n", crypto.symbol.c_str());
 
   setFont(OpenSans14B);
 
@@ -104,15 +105,15 @@ void renderCryptoCard(Crypto crypto) {
 
   String Str = getFormatCurrencyValue(crypto.price.inr);
   char *string2 = &Str[0];
-  if (devmod) Serial.printf("-->[eINK] Price USD - %s\n", Str.c_str());
+  if (devmod) Serial.printf("-->[eINK] Price USD - %s\r\n", Str.c_str());
   drawString(345, cursor_y, String(string2), RIGHT);
 
-  if (devmod) Serial.printf("-->[eINK] Day change - %s\n", formatPercentageChange(crypto.dayChange).c_str());
+  if (devmod) Serial.printf("-->[eINK] Day change - %s\r\n", formatPercentageChange(crypto.dayChange).c_str());
   Str = getFormatCurrencyValue(crypto.dayChange);
   char *string3 = &Str[0];
   drawString(560, cursor_y, String(string3), RIGHT);
 
-  if (devmod) Serial.printf("-->[eINK] Week change - %s\n", formatPercentageChange(crypto.weekChange).c_str());
+  if (devmod) Serial.printf("-->[eINK] Week change - %s\r\n", formatPercentageChange(crypto.weekChange).c_str());
   Str = getFormatCurrencyValue(crypto.weekChange);
   char *string4 = &Str[0];
   drawString(EPD_WIDTH - 130, cursor_y, String(string4), RIGHT);
@@ -197,7 +198,7 @@ void displayStatusSection() {
   fillRect(1, 16, EPD_WIDTH, 2, Black);
   fillRect(1, EPD_HEIGHT - 39, EPD_WIDTH, 3, Black);
 
-  if (!wcli.isConfigured())
+  if (!wcli.isConfigured() || BtnConfigIsPressed)
     renderStatusMsg("Please enter to the serial console to setup");
   else
     renderStatusMsg("Downloading Crypto data..");
@@ -214,10 +215,10 @@ void eInkTask(void *pvParameters) {
   logMemory();
 
   int boot_count = getInt(key_boot_count, 0);
-  Serial.printf("-->[eINK] boot_count: %i\n", boot_count);
+  Serial.printf("-->[eINK] boot_count: %i\r\n", boot_count);
 
   int reset_reason = rtc_get_reset_reason(0);
-  if (devmod) Serial.printf("-->[eINK] reset_reason: %i\n", reset_reason);
+  if (devmod) Serial.printf("-->[eINK] reset_reason: %i\r\n", reset_reason);
 
   if (devmod) Serial.println("-->[eINK] Drawing static GUI..");
   if (boot_count == 0 || reset_reason == 1) {
@@ -292,7 +293,16 @@ bool downloadData() {
 }
 
 bool isConfigured() {
-    return wcli.isConfigured();
+    return wcli.isConfigured() && cryptosCount == 3;
+}
+
+void printRequirements() {
+  if (cryptosCount < 3) {
+    Serial.println("\r\nPlease enter at least 3 currencies to start\r\n");
+  }
+  if (!wcli.isConfigured()) {
+    Serial.println("\r\nPlease configure at least one WiFi Network\r\n");
+  }
 }
 
 class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
@@ -301,15 +311,23 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   // Callback for extend the help menu.
   void onHelpShow() {
-    Serial.println("\r\nCustom commands:\r\n");
-    Serial.println("cryptoSave <crypto>\tset crypto currency");
-    Serial.println("cryptoList\t\tlist current saved crypto currencies");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+    Serial.println("\r\nCrypto Panel Commands:\r\n");
+    Serial.println("curAdd <crypto>\t\tadd one crypto currency");
+    Serial.println("curList\t\t\tlist current saved crypto currencies");
+    Serial.println("curDrop <crypto>\tdelete one crypto currency");
+    Serial.println("reboot\t\t\tperform a soft ESP32 reboot"); 
+    printRequirements();
   }
 };
 
 void _cryptoList(String opts){
   listCryptos();
+}
+
+void _cryptoDelete(String opts){
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  String crypto = operands.first();
+  deleteCrypto(crypto);
 }
 
 void _cryptoSave(String opts) {
@@ -323,29 +341,33 @@ void reboot(String opts){
 }
 
 void setup() {
-  Serial.begin(115200);
   correct_adc_reference();
-  setupGUITask();
-
   pinMode(SETUP_BTN_PIN, INPUT_PULLUP);
-
-  wcli.setCallback(new mESP32WifiCLICallbacks());
-  wcli.begin();
-  wcli.term->add("cryptoSave", &_cryptoSave, "set crypto currency");
-  wcli.term->add("cryptoList", &_cryptoList, "list crypto currencies");
-  wcli.term->add("reboot", &reboot, "\tperform panel reboot");
-
-  bool BtnConfigIsPressed = digitalRead(SETUP_BTN_PIN) == LOW;
-
-  if (BtnConfigIsPressed) {
-    Serial.println("-->[eINK] Setup button pressed, starting setup..");
+  Serial.begin(115200);
+  listCryptos(true);
+  BtnConfigIsPressed = digitalRead(SETUP_BTN_PIN) == LOW;
+  if (!isConfigured() || BtnConfigIsPressed) {
+    Serial.println("\r\n== Setup Mode ==\r\n");
+    printRequirements();
     Serial.flush();
     delay(100);
   }
+  
+  setupGUITask();
+
+  wcli.setCallback(new mESP32WifiCLICallbacks());
+  wcli.begin();
+  wcli.term->add("curAdd", &_cryptoSave, "\tadd one crypto currency. Max 3");
+  wcli.term->add("curList", &_cryptoList, "\tlist crypto currencies");
+  wcli.term->add("curDrop", &_cryptoDelete, "\tdelete one crypto currency");
+  wcli.term->add("reboot", &reboot, "\tperform panel reboot");
+
 
   while (!isConfigured() || BtnConfigIsPressed) {  // force to configure the panel.
     wcli.loop();
   }
+
+  Serial.println("\r\n== Setup ready ==\r\n");
 
   esp_task_wdt_init(40, true);
   esp_task_wdt_add(NULL);
