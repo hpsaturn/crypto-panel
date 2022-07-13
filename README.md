@@ -9,24 +9,36 @@ LilyGo EDP47 ESP32 Crypto currency News and Tracker
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
 
-### WiFi Credentials:
-
-Please first export your WiFi credentials like environment variables, for example
-
-```python
-export PIO_WIFI_PASSWORD='MyPassword'
-export PIO_WIFI_SSID='MyWifiSSID'
-```
-
-### Config:
-
-On `cryptos.h` choose your currencies in [this lines](https://github.com/hpsaturn/crypto-currency/blob/master/src/cryptos.h#L34-L38)  
-On `platformio.ini` set power saving settings and temperature around the device
-
 ## Build and Upload
-
 ```bash
 pio run --target upload
+```
+
+## Panel config
+
+After the boot or first restart, please enter via serial console or terminal and please configure your settings, at least one WiFi network and 3 currencies. Type help and you should able to have the next menu:
+
+```bash
+ESP32WifiCLI Usage:
+
+setSSID "YOUR SSID"     set the SSID into quotes
+setPASW "YOUR PASW"     set the password into quotes
+connect                 save and connect to the network
+list                    list all saved networks
+select <number>         select the default AP (default: last saved)
+mode <single/multi>     set the connection mode. Multi AP is a little slow
+scan                    scan for available networks
+status                  print the current WiFi status
+disconnect              disconnect from the network
+delete "SSID"           remove saved network
+help                    print this help
+
+Crypto Panel commands:
+
+curAdd <crypto>         add one crypto currency
+curList                 list current saved crypto currencies
+curDrop <crypto>        delete one crypto currency
+reboot                  perform a soft ESP32 reboot
 ```
 
 ## TODO
@@ -35,10 +47,11 @@ pio run --target upload
 - [x] remote OTA updates via PlatformIO and FOTA
 - [x] new API for Crypto News (RSS)
 - [x] diplay news feed and news link with a QR code
-- [ ] set WiFi credentials via JSON on flash user partition
-- [ ] run FOTA update without change WiFi credentials
+- [x] cofigure the eInk panel via command line
+- [x] run FOTA update without change WiFi credentials
+- [ ] **Coaming soon**: Web installer like [CanAirIO installer](https://canair.io/installer)
 - [ ] Bluetooth alternative for set preferences
-- [ ] Easy firmware upload on first case use with [CanAirIO loader](https://github.com/hpsaturn/esp32-canairio-loader)
+
 
 ## Donations
 
@@ -50,6 +63,13 @@ pio run --target upload
 <a href="images/ethereum_donation_address.png" target="_blank" style="padding-left: 40px" ><img src="images/ethereum_donation_address.png" width="180" ></a>
 
 ## Changelog
+
+**20220713 rev150**
+```
+Changed panel config via CLI
+  - Added ESP32WifiCLI library
+  - extended CLI to have a currencies configuration
+```
 
 **20211106 rev145**
 
