@@ -46,7 +46,7 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     
     fota.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
     
-    Serial.printf("-->[INFO] OTA: %s@%s\n",ESP_ID,ESP_PASS);
+    Serial.printf("-->[INFO] OTA: %s@%s\r\n",ESP_ID,ESP_PASS);
 }
 
 void OTAHandler::checkRemoteOTA(bool notify) {
