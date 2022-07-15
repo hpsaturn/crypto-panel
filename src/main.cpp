@@ -327,12 +327,12 @@ void _setBase (String opts) {
 void _setSleepTime(String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   int sleepTime = operands.first().toInt();
-  if (sleepTime >= 10) {
+  if (sleepTime >= 5) {
     deep_sleep_time = sleepTime * 60;
     setInt(key_sleep_time, sleepTime);
   } else {
     Serial.printf("\r\ninvalid sleep time\r\ncurrent sleep time is: %i\r\n",deep_sleep_time / 60);
-    Serial.println("minimum sleep time is 10 minutes. Recommended is 60 minutes or more");
+    Serial.println("minimum sleep time is 5 minutes. Recommended is 60 minutes or more");
   }
 }
 
