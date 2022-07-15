@@ -29,19 +29,9 @@
 #include "hal.h"
 #include "powertools.h"
 
-// ----------------------------
-// Configurations
-// ----------------------------
-
-// default currency
-const char *currency_base = "eur";
-
-// ----------------------------
-// End of area you need to change
-// ----------------------------
-
 #define MAX_RETRY 2  // max retry download
 
+String currency_base = "eur"; // default currency. Please change this value via CLI.
 bool devmod = (bool)CORE_DEBUG_LEVEL;  // extra debug msgs
 bool BtnConfigIsPressed;
 
@@ -55,6 +45,10 @@ int gmtOffset_sec = 7200;  // GMT Offset in seconds. GMT Offset is 0, US (-5Hrs)
 
 void logMemory() {
   if (devmod) Serial.printf("-->[IHAL] Used PSRAM: %d\r\n", ESP.getPsramSize() - ESP.getFreePsram());
+}
+
+bool isConfigured() {
+    return wcli.isConfigured() && cryptosCount == 3;
 }
 
 void title() {
@@ -132,7 +126,7 @@ void displayDebugInfo() {
   String netip = "IP: " + WiFi.localIP().toString();
   String netmc = "MAC:" + WiFi.macAddress();
   String boots = "Weakup count: " + String(reset_count) + "/" + String(EPD_REFRESH_COUNT);
-  String confg = "Deep sleep duration: " + String(DEEP_SLEEP_TIME);
+  String confg = "Deep sleep duration: " + String(deep_sleep_time) + " seconds";
   String wakup = get_wakeup_reason();
   String reset = get_reset_reason(0);
 
@@ -196,7 +190,7 @@ void displayStatusSection() {
   fillRect(1, 16, EPD_WIDTH, 2, Black);
   fillRect(1, EPD_HEIGHT - 39, EPD_WIDTH, 3, Black);
 
-  if (!wcli.isConfigured() || BtnConfigIsPressed)
+  if (!isConfigured() || BtnConfigIsPressed)
     renderStatusMsg("Please enter to the serial console to setup");
   else
     renderStatusMsg("Downloading Crypto data..");
@@ -237,7 +231,7 @@ void eInkTask(void *pvParameters) {
 }
 
 void setupGUITask() {
-  Serial.println("-->[eINK] Starting eINK Task..");
+  Serial.println("\r\n-->[eINK] Starting eINK Task..");
   xTaskCreatePinnedToCore(
       eInkTask,    /* Function to implement the task */
       "eInkTask ", /* Name of the task */
@@ -290,16 +284,12 @@ bool downloadData() {
   return success;
 }
 
-bool isConfigured() {
-    return wcli.isConfigured() && cryptosCount == 3;
-}
-
 void printRequirements() {
   if (cryptosCount < 3) {
-    Serial.println("\r\nPlease enter at least 3 currencies to start\r\n");
+    Serial.println("\r\nPlease enter at least 3 currencies to finish setup");
   }
   if (!wcli.isConfigured()) {
-    Serial.println("\r\nPlease configure at least one WiFi Network\r\n");
+    Serial.println("\r\nPlease configure at least one WiFi to finish setup");
   }
 }
 
@@ -312,11 +302,51 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
     Serial.println("\r\nCrypto Panel Commands:\r\n");
     Serial.println("curAdd <crypto>\t\tadd one crypto currency");
     Serial.println("curList\t\t\tlist current saved crypto currencies");
-    Serial.println("curDrop <crypto>\tdelete one crypto currency");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot"); 
+    Serial.println("curDrop <crypto>\t\tdelete one crypto currency");
+    Serial.println("setBase <base>\t\tset base currency (USD/EUR)");
+    Serial.println("setSleep <time>\t\tconfig deep sleep time in minutes");
+    Serial.println("setTemp <temperature>\tconfig the panel ambient temperature");
+    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
+    Serial.println("help\t\t\tdisplay this help menu\r\n");
     printRequirements();
   }
 };
+
+void _setBase (String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  String base = operands.first();
+  if (base.equals("usd") || base.equals("eur")) {
+    currency_base = base;
+    setString(key_cur_base, base);
+  } else {
+    Serial.println("\r\nInvalid base currency. Please enter USD or EUR");
+    Serial.printf("Current base currency: %s\r\n", currency_base.c_str());
+  }
+}
+
+void _setSleepTime(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  int sleepTime = operands.first().toInt();
+  if (sleepTime >= 10) {
+    deep_sleep_time = sleepTime * 60;
+    setInt(key_sleep_time, sleepTime);
+  } else {
+    Serial.printf("\r\ninvalid sleep time\r\ncurrent sleep time is: %i\r\n",deep_sleep_time / 60);
+    Serial.println("minimum sleep time is 10 minutes. Recommended is 60 minutes or more");
+  }
+}
+
+void _setTemp(String opts) {
+  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+  int temp = operands.first().toInt();
+  if (temp < 10 || temp > 50) {
+    Serial.println("\r\nplease enter a temperature value between 10 and 50");
+    Serial.printf("current temperature is: %d\r\n",ambient_temp);
+    return;
+  }
+  ambient_temp = temp;
+  setInt(key_panel_temp, temp);
+}
 
 void _cryptoList(String opts){
   listCryptos();
@@ -344,13 +374,18 @@ void setup() {
   Serial.begin(115200);
   listCryptos(true);
   BtnConfigIsPressed = digitalRead(SETUP_BTN_PIN) == LOW;
+
   if (!isConfigured() || BtnConfigIsPressed) {
     Serial.println("\r\n== Setup Mode ==\r\n");
     printRequirements();
     Serial.flush();
     delay(100);
   }
-  
+
+  currency_base = getString(key_cur_base, "eur");
+  ambient_temp = getInt(key_panel_temp, 22);
+  deep_sleep_time = getInt(key_sleep_time, 10) * 60;
+
   setupGUITask();
 
   wcli.setCallback(new mESP32WifiCLICallbacks());
@@ -358,8 +393,10 @@ void setup() {
   wcli.term->add("curAdd", &_cryptoSave, "\tadd one crypto currency. Max 3");
   wcli.term->add("curList", &_cryptoList, "\tlist crypto currencies");
   wcli.term->add("curDrop", &_cryptoDelete, "\tdelete one crypto currency");
-  wcli.term->add("reboot", &reboot, "\tperform panel reboot");
-
+  wcli.term->add("setBase", &_setBase, "\tset base currency (USD/EUR)");
+  wcli.term->add("setSleep", &_setSleepTime, "config deep sleep time");
+  wcli.term->add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");
+  wcli.term->add("reboot", &reboot, "\tperform panel reboot\r\n");
 
   while (!isConfigured() || BtnConfigIsPressed) {  // force to configure the panel.
     wcli.loop();

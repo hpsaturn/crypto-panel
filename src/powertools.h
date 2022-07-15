@@ -11,10 +11,11 @@
 int vref = 1100;
 float curv = 0;
 double_t battery_voltage = 0;
+int deep_sleep_time = 600; // Default 10 minutes. Please change this value via CLI.
 
 void suspendDevice() {
   Serial.println("-->[eINK] shutdown..");
-  esp_sleep_enable_timer_wakeup(1000000LL * DEEP_SLEEP_TIME);
+  esp_sleep_enable_timer_wakeup(1000000LL * 600);
   esp_deep_sleep_start();
 }
 

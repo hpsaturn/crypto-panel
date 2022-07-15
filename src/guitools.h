@@ -34,6 +34,7 @@ enum alignment { LEFT,
 EpdiyHighlevelState hl;
 EpdRotation orientation = EPD_ROT_LANDSCAPE;
 EpdFont currentFont;
+int ambient_temp = 22;
 
 uint8_t *fb;
 enum EpdDrawError err;
@@ -122,7 +123,7 @@ void setFont(EpdFont const &font) {
 
 void epd_update() {
   epd_poweron();
-  epd_hl_update_screen(&hl, MODE_GC16, EPD_AMBIENT_TEMPERATURE);
+  epd_hl_update_screen(&hl, MODE_GC16, ambient_temp);
   delay(600);
   epd_poweroff();
 }
@@ -145,7 +146,7 @@ void renderStatusMsg(String msg) {
 }
 
 void eInkClear() {
-  epd_fullclear(&hl, EPD_AMBIENT_TEMPERATURE);
+  epd_fullclear(&hl, ambient_temp);
   epd_hl_set_all_white(&hl);
 }
 
