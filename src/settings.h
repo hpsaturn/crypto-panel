@@ -3,6 +3,9 @@
 Preferences cfg;
 const char* app_name = "crypto_currency";
 const char* key_boot_count = "key_boot_count";
+const char* key_panel_temp = "key_panel_temp";
+const char* key_sleep_time = "key_sleep_time";
+const char* key_cur_base = "key_cur_base";
 
 String getKeyName(int cryptoId) {
   char key[15];
@@ -18,7 +21,7 @@ void listCryptos(bool load = false) {
     String key = getKeyName(cryptoId);
     String crypto = cfg.getString(key.c_str(), "");
     Serial.printf("%d: [%s]\r\n", cryptoId, crypto.c_str());
-    if(load) cryptos[cryptoId-1].apiName = crypto;
+    if (load) cryptos[cryptoId - 1].apiName = crypto;
     cryptosCount = cryptoId;
     cryptoId++;
   }
@@ -26,17 +29,20 @@ void listCryptos(bool load = false) {
   cfg.end();
 }
 
-bool saveCrypto(String crypto){
-  if(crypto.length() == 0) return false;
+bool saveCrypto(String crypto) {
+  if (crypto.length() == 0) {
+    Serial.println("\nInvalid crypto currency name");
+    return false;
+  }
   cfg.begin(app_name, RW_MODE);
   int cryptoId = cfg.getInt("crypto_count", 0);
-  if(cryptoId == 3) {
+  if (cryptoId == 3) {
     Serial.println("\nMaximum number of cryptos reached.");
     cfg.end();
     return false;
   }
   String key = getKeyName(cryptoId + 1);
-  Serial.printf("Saving crypto currency: [%s][%s]\r\n",key.c_str(), crypto.c_str());
+  Serial.printf("Saving crypto currency: [%s][%s]\r\n", key.c_str(), crypto.c_str());
   cfg.putString(key.c_str(), crypto);
   cfg.putInt("crypto_count", cryptoId + 1);
   cfg.end();
@@ -45,7 +51,7 @@ bool saveCrypto(String crypto){
   return true;
 }
 
-bool deleteCrypto(String crypto){
+bool deleteCrypto(String crypto) {
   if (crypto.length() == 0) {
     Serial.println("\nerror: crypto is empty, please pass a valid crypto name");
     return false;
@@ -80,15 +86,28 @@ bool deleteCrypto(String crypto){
   return dropped;
 }
 
-void setInt(String key, int value){
-    cfg.begin(app_name, RW_MODE);
-    cfg.putInt(key.c_str(), value);
-    cfg.end();
+void setInt(String key, int value) {
+  cfg.begin(app_name, RW_MODE);
+  cfg.putInt(key.c_str(), value);
+  cfg.end();
 }
 
-int32_t getInt(String key, int defaultValue){
-    cfg.begin(app_name, RO_MODE);
-    int32_t out = cfg.getInt(key.c_str(), defaultValue);
-    cfg.end();
-    return out;
+int32_t getInt(String key, int defaultValue) {
+  cfg.begin(app_name, RO_MODE);
+  int32_t out = cfg.getInt(key.c_str(), defaultValue);
+  cfg.end();
+  return out;
+}
+
+void setString(String key, String value) {
+  cfg.begin(app_name, RW_MODE);
+  cfg.putString(key.c_str(), value);
+  cfg.end();
+}
+
+String getString(String key, String defaultValue) {
+  cfg.begin(app_name, RO_MODE);
+  String out = cfg.getString(key.c_str(), defaultValue);
+  cfg.end();
+  return out;
 }
