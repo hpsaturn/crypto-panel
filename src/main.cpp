@@ -315,6 +315,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 void _setBase (String opts) {
   maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
   String base = operands.first();
+  base.toLowerCase();
   if (base.equals("usd") || base.equals("eur")) {
     currency_base = base;
     setString(key_cur_base, base);
