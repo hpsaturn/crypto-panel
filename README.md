@@ -16,29 +16,33 @@ pio run --target upload
 
 ## Panel config
 
-After the boot or first restart, please enter via serial console or terminal and please configure your settings, at least one WiFi network and 3 currencies. Type help and you should able to have the next menu:
+After the boot or first restart, please enter via serial console or terminal and please configure your settings, at least one WiFi network and 3 currencies. Type `help` and you should able to have the next menu:
 
 ```bash
 ESP32WifiCLI Usage:
 
-setSSID "YOUR SSID"     set the SSID into quotes
-setPASW "YOUR PASW"     set the password into quotes
-connect                 save and connect to the network
-list                    list all saved networks
-select <number>         select the default AP (default: last saved)
-mode <single/multi>     set the connection mode. Multi AP is a little slow
-scan                    scan for available networks
-status                  print the current WiFi status
-disconnect              disconnect from the network
-delete "SSID"           remove saved network
-help                    print this help
+setSSID "YOUR SSID"   set the SSID into quotes
+setPASW "YOUR PASW"   set the password into quotes
+connect               save and connect to the network
+list                  list all saved networks
+select <number>       select the default AP (default: last saved)
+mode <single/multi>   connection mode. Multi AP is a little slow
+scan                  scan for available networks
+status                print the current WiFi status
+disconnect            disconnect from the network
+delete "SSID"         remove saved network
+help                  print this help
 
-Crypto Panel commands:
+Crypto Panel Commands:
 
-curAdd <crypto>         add one crypto currency
-curList                 list current saved crypto currencies
-curDrop <crypto>        delete one crypto currency
-reboot                  perform a soft ESP32 reboot
+curAdd <crypto>       add one cryptocurrency
+curList               list current saved cryptocurrencies
+curDrop <crypto>      delete one cryptocurrency
+setBase <base>        set base currency (USD/EUR)
+setSleep <time>       config deep sleep time in minutes
+setTemp <temperature> config the panel ambient temperature
+reboot                perform a soft ESP32 reboot
+help                  display this help menu
 ```
 
 ## TODO

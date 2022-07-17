@@ -34,6 +34,7 @@ enum alignment { LEFT,
 EpdiyHighlevelState hl;
 EpdRotation orientation = EPD_ROT_LANDSCAPE;
 EpdFont currentFont;
+int ambient_temp = 22;
 
 uint8_t *fb;
 enum EpdDrawError err;
@@ -122,7 +123,7 @@ void setFont(EpdFont const &font) {
 
 void epd_update() {
   epd_poweron();
-  epd_hl_update_screen(&hl, MODE_GC16, EPD_AMBIENT_TEMPERATURE);
+  epd_hl_update_screen(&hl, MODE_GC16, ambient_temp);
   delay(600);
   epd_poweroff();
 }
@@ -144,8 +145,23 @@ void renderStatusMsg(String msg) {
   epd_update();
 }
 
+void renderPost(String title, String summary, String date = "", String author = "", const uint8_t *qr = nullptr, int qr_size = 0) {
+  setFont(OpenSans14B);
+  drawString(EPD_WIDTH / 2, 285, title, CENTER); 
+  setFont(OpenSans10B);
+  if (qr != nullptr && qr_size > 0) {
+    drawString(60, 370, summary, LEFT);
+    drawQrImage(EPD_WIDTH - 60 - qr_size, 330, qr_size, qr);
+  }
+  else {
+    drawString(EPD_WIDTH / 2, 370, summary, CENTER); 
+  }
+  setFont(OpenSans8B);
+  drawString(EPD_WIDTH / 2, 470, date + "  " + author, CENTER);
+}
+
 void eInkClear() {
-  epd_fullclear(&hl, EPD_AMBIENT_TEMPERATURE);
+  epd_fullclear(&hl, ambient_temp);
   epd_hl_set_all_white(&hl);
 }
 
