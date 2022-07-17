@@ -33,7 +33,7 @@
 
 String currency_base = "eur"; // default currency. Please change this value via CLI.
 bool devmod = (bool)CORE_DEBUG_LEVEL;  // extra debug msgs
-bool BtnConfigIsPressed;
+bool BtnConfigPressed;
 
 // NTP time
 WiFiUDP ntpUDP;
@@ -190,7 +190,7 @@ void displayStatusSection() {
   fillRect(1, 16, EPD_WIDTH, 2, Black);
   fillRect(1, EPD_HEIGHT - 39, EPD_WIDTH, 3, Black);
 
-  if (!isConfigured() || BtnConfigIsPressed)
+  if (!isConfigured() || BtnConfigPressed)
     renderStatusMsg("Please enter to the serial console to setup");
   else
     renderStatusMsg("Downloading Crypto data..");
@@ -373,10 +373,10 @@ void setup() {
   correct_adc_reference();
   pinMode(SETUP_BTN_PIN, INPUT_PULLUP);
   Serial.begin(115200);
-  listCryptos(true);
-  BtnConfigIsPressed = digitalRead(SETUP_BTN_PIN) == LOW;
+  listCryptos(true);  // load configured crypto currencies from flash
+  BtnConfigPressed = (digitalRead(SETUP_BTN_PIN) == LOW || wakeup_by_setup_button());
 
-  if (!isConfigured() || BtnConfigIsPressed) {
+  if (!isConfigured() || BtnConfigPressed) {
     Serial.println("\r\n== Setup Mode ==\r\n");
     printRequirements();
     Serial.flush();
@@ -399,7 +399,7 @@ void setup() {
   wcli.term->add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");
   wcli.term->add("reboot", &reboot, "\tperform panel reboot\r\n");
 
-  while (!isConfigured() || BtnConfigIsPressed) {  // force to configure the panel.
+  while (!isConfigured() || BtnConfigPressed) {  // force to configure the panel.
     wcli.loop();
   }
 
