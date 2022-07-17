@@ -300,11 +300,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   // Callback for extend the help menu.
   void onHelpShow() {
     Serial.println("\r\nCrypto Panel Commands:\r\n");
-    Serial.println("curAdd <crypto>\t\tadd one crypto currency");
+    Serial.println("curAdd <crypto>\tadd one crypto currency");
     Serial.println("curList\t\t\tlist current saved crypto currencies");
-    Serial.println("curDrop <crypto>\t\tdelete one crypto currency");
+    Serial.println("curDrop <crypto>\tdelete one crypto currency");
     Serial.println("setBase <base>\t\tset base currency (USD/EUR)");
-    Serial.println("setSleep <time>\t\tconfig deep sleep time in minutes");
+    Serial.println("setSleep <time>\tconfig deep sleep time in minutes");
     Serial.println("setTemp <temperature>\tconfig the panel ambient temperature");
     Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
     Serial.println("help\t\t\tdisplay this help menu\r\n");
