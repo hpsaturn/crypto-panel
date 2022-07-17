@@ -35,9 +35,9 @@ help                  print this help
 
 Crypto Panel Commands:
 
-curAdd <crypto>       add one crypto currency
-curList               list current saved crypto currencies
-curDrop <crypto>      delete one crypto currency
+curAdd <crypto>       add one cryptocurrency
+curList               list current saved cryptocurrencies
+curDrop <crypto>      delete one cryptocurrency
 setBase <base>        set base currency (USD/EUR)
 setSleep <time>       config deep sleep time in minutes
 setTemp <temperature> config the panel ambient temperature
