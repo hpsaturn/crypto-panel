@@ -34,6 +34,7 @@
 String currency_base = "eur"; // default currency. Please change this value via CLI.
 bool devmod = (bool)CORE_DEBUG_LEVEL;  // extra debug msgs
 bool BtnConfigPressed;
+bool inSetup;
 
 // NTP time
 WiFiUDP ntpUDP;
@@ -189,17 +190,21 @@ void displayStatusSection() {
   if (devmod) displayDebugInfo();
   fillRect(1, 16, EPD_WIDTH, 2, Black);
   fillRect(1, EPD_HEIGHT - 39, EPD_WIDTH, 3, Black);
-
-  if (!isConfigured() || BtnConfigPressed)
-    renderStatusMsg("Please enter to the serial console to setup");
-  else
-    renderStatusMsg("Downloading Crypto data..");
+  if(inSetup) renderStatusMsg("waiting for configuration..");
+  else renderStatusMsg("Downloading Crypto data.."); 
 }
 
 void onUpdateMessage(const char *msg) {
   renderStatusMsg("Updating firmware to rev 0" + String(msg) + "..");
   delay(200);
   setInt(key_boot_count, 0);
+}
+
+void renderStaticContent(bool inSetup){
+    eInkClear();
+    renderStatusMsg("LOADING...");
+    if(inSetup) renderPost("Welcome to Cryptocurrency Panel!", "Please enter to the serial console to setup");
+    else title();
 }
 
 void eInkTask(void *pvParameters) {
@@ -211,16 +216,14 @@ void eInkTask(void *pvParameters) {
 
   int reset_reason = rtc_get_reset_reason(0);
   if (devmod) Serial.printf("-->[eINK] reset_reason: %i\r\n", reset_reason);
-
+  
   if (devmod) Serial.println("-->[eINK] Drawing static GUI..");
-  if (boot_count == 0 || reset_reason == 1) {
-    eInkClear();
-    renderStatusMsg("LOADING...");
-    title();
-  } else
+  if (boot_count == 0 || reset_reason == 1 || inSetup)
+    renderStaticContent(inSetup);
+  else
     renderStatusMsg("========= Connecting =========");
 
-  if (boot_count++ > EPD_REFRESH_COUNT)
+  if (boot_count++ > EPD_REFRESH_COUNT || inSetup)
     setInt(key_boot_count, 0);
   else
     setInt(key_boot_count, boot_count);
@@ -252,23 +255,17 @@ void renderNetworkError() {
   renderStatusQueue(status);
 }
 
-void extractNews() {
+void renderNews() {
   if (devmod) Serial.println("-->[nAPI] News Author: " + news.author);
 
   uint32_t qrlenght = news.qrsize * news.qrsize;
-  uint8_t *rambf = (uint8_t *)ps_malloc(qrlenght / 2);
+  uint8_t *buffer = (uint8_t *)ps_malloc(qrlenght / 2);
   for (unsigned i = 0, uchr; i < qrlenght; i += 2) {
     sscanf(news.qr + i, "%2x", &uchr);  // conversion
-    rambf[i / 2] = uchr;                // save as char
+    buffer[i / 2] = uchr;               // save as char
   }
-  setFont(OpenSans14B);
-  drawString(EPD_WIDTH / 2, 285, news.title, CENTER);
-  setFont(OpenSans10B);
-  drawString(60, 370, news.summary, LEFT);
-  setFont(OpenSans8B);
-  drawString(EPD_WIDTH / 2, 470, news.published + "  " + news.author, CENTER);
-  drawQrImage(EPD_WIDTH - 60 - news.qrsize, 330, news.qrsize, rambf);
-  free(rambf);
+  renderPost(news.title, news.summary, news.published, news.author, buffer, news.qrsize);
+  free(buffer);
 }
 
 bool downloadData() {
@@ -276,7 +273,7 @@ bool downloadData() {
   delay(100);
   bool cryptoDataReady = downloadBtcAndEthPrice();
   delay(100);
-  if (downloadNewsData()) extractNews();
+  if (downloadNewsData()) renderNews();
 
   bool success = baseDataReady && cryptoDataReady;
 
@@ -300,11 +297,11 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   // Callback for extend the help menu.
   void onHelpShow() {
     Serial.println("\r\nCrypto Panel Commands:\r\n");
-    Serial.println("curAdd <crypto>\tadd one cryptocurrency");
+    Serial.println("curAdd <crypto>   \tadd one cryptocurrency");
     Serial.println("curList\t\t\tlist saved cryptocurrencies");
-    Serial.println("curDrop <crypto>\tdelete one cryptocurrency");
+    Serial.println("curDrop <crypto> \tdelete one cryptocurrency");
     Serial.println("setBase <base>\t\tset base currency (USD/EUR)");
-    Serial.println("setSleep <time>\tconfig deep sleep time in minutes");
+    Serial.println("setSleep <time>   \tconfig deep sleep time in minutes");
     Serial.println("setTemp <temperature>\tconfig the panel ambient temperature");
     Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
     Serial.println("help\t\t\tdisplay this help menu\r\n");
@@ -375,8 +372,9 @@ void setup() {
   Serial.begin(115200);
   listCryptos(true);  // load configured crypto currencies from flash
   BtnConfigPressed = (digitalRead(SETUP_BTN_PIN) == LOW || wakeup_by_setup_button());
+  inSetup = !isConfigured() || BtnConfigPressed;
 
-  if (!isConfigured() || BtnConfigPressed) {
+  if (inSetup) {
     Serial.println("\r\n== Setup Mode ==\r\n");
     printRequirements();
     Serial.flush();
@@ -402,8 +400,9 @@ void setup() {
   while (!isConfigured() || BtnConfigPressed) {  // force to configure the panel.
     wcli.loop();
   }
-
+  
   Serial.println("\r\n== Setup ready ==\r\n");
+  if(inSetup) renderStaticContent(false);  // restore normal static content
 
   esp_task_wdt_init(40, true);
   esp_task_wdt_add(NULL);
