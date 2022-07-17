@@ -207,7 +207,7 @@ void eInkTask(void *pvParameters) {
   logMemory();
 
   int boot_count = getInt(key_boot_count, 0);
-  Serial.printf("-->[eINK] boot_count: %i\r\n", boot_count);
+  if(devmod) Serial.printf("-->[eINK] boot_count: %i\r\n", boot_count);
 
   int reset_reason = rtc_get_reset_reason(0);
   if (devmod) Serial.printf("-->[eINK] reset_reason: %i\r\n", reset_reason);
@@ -231,7 +231,7 @@ void eInkTask(void *pvParameters) {
 }
 
 void setupGUITask() {
-  Serial.println("\r\n-->[eINK] Starting eINK Task..");
+  if (devmod) Serial.println("\r\n-->[eINK] Starting eINK Task..");
   xTaskCreatePinnedToCore(
       eInkTask,    /* Function to implement the task */
       "eInkTask ", /* Name of the task */
@@ -300,9 +300,9 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   // Callback for extend the help menu.
   void onHelpShow() {
     Serial.println("\r\nCrypto Panel Commands:\r\n");
-    Serial.println("curAdd <crypto>\tadd one crypto currency");
-    Serial.println("curList\t\t\tlist current saved crypto currencies");
-    Serial.println("curDrop <crypto>\tdelete one crypto currency");
+    Serial.println("curAdd <crypto>\tadd one cryptocurrency");
+    Serial.println("curList\t\t\tlist saved cryptocurrencies");
+    Serial.println("curDrop <crypto>\tdelete one cryptocurrency");
     Serial.println("setBase <base>\t\tset base currency (USD/EUR)");
     Serial.println("setSleep <time>\tconfig deep sleep time in minutes");
     Serial.println("setTemp <temperature>\tconfig the panel ambient temperature");
@@ -391,9 +391,9 @@ void setup() {
 
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.begin();
-  wcli.term->add("curAdd", &_cryptoSave, "\tadd one crypto currency. Max 3");
-  wcli.term->add("curList", &_cryptoList, "\tlist crypto currencies");
-  wcli.term->add("curDrop", &_cryptoDelete, "\tdelete one crypto currency");
+  wcli.term->add("curAdd", &_cryptoSave, "\tadd one cryptocurrency. Max 3");
+  wcli.term->add("curList", &_cryptoList, "\tlist saved cryptocurrencies");
+  wcli.term->add("curDrop", &_cryptoDelete, "\tdelete one cryptocurrency");
   wcli.term->add("setBase", &_setBase, "\tset base currency (USD/EUR)");
   wcli.term->add("setSleep", &_setSleepTime, "config deep sleep time");
   wcli.term->add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");

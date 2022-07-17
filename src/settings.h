@@ -16,11 +16,11 @@ String getKeyName(int cryptoId) {
 void listCryptos(bool load = false) {
   cfg.begin(app_name, RO_MODE);
   int cryptoId = 1;
-  Serial.println("\nSaved Crypto currencies:\n");
+  if(!load) Serial.println("\nSaved Cryptocurrencies:\n");
   while (cfg.isKey(getKeyName(cryptoId).c_str())) {
     String key = getKeyName(cryptoId);
     String crypto = cfg.getString(key.c_str(), "");
-    Serial.printf("%d: [%s]\r\n", cryptoId, crypto.c_str());
+    if (!load) Serial.printf("%d: [%s]\r\n", cryptoId, crypto.c_str());
     if (load) cryptos[cryptoId - 1].apiName = crypto;
     cryptosCount = cryptoId;
     cryptoId++;
@@ -31,7 +31,7 @@ void listCryptos(bool load = false) {
 
 bool saveCrypto(String crypto) {
   if (crypto.length() == 0) {
-    Serial.println("\nInvalid crypto currency name");
+    Serial.println("\nInvalid cryptocurrency name");
     return false;
   }
   cfg.begin(app_name, RW_MODE);
@@ -42,7 +42,7 @@ bool saveCrypto(String crypto) {
     return false;
   }
   String key = getKeyName(cryptoId + 1);
-  Serial.printf("Saving crypto currency: [%s][%s]\r\n", key.c_str(), crypto.c_str());
+  Serial.printf("Saving cryptocurrency: [%s][%s]\r\n", key.c_str(), crypto.c_str());
   cfg.putString(key.c_str(), crypto);
   cfg.putInt("crypto_count", cryptoId + 1);
   cfg.end();
