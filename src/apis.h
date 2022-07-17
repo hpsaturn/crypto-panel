@@ -192,9 +192,9 @@ bool downloadNewsData() {
   http.useHTTP10(true);
   WiFiClient client;
 
-  String apiUrl = "http://influxdb.canair.io:8080/posts";
+  String apiUrl = "http://crypto.hpsaturn.com:8080/posts";
 
-  Serial.println("-->[cAPI] target news: " + apiUrl);
+  // Serial.println("-->[cAPI] target news: " + apiUrl);
 
   http.begin(client, apiUrl);
 
