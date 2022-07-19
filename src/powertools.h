@@ -15,6 +15,7 @@ int deep_sleep_time = 600; // Default 10 minutes. Please change this value via C
 
 void suspendDevice() {
   Serial.println("-->[eINK] shutdown..");
+  delay(100);
   esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
   esp_sleep_enable_timer_wakeup(1000000LL * deep_sleep_time);
   esp_deep_sleep_start();

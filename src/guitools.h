@@ -124,8 +124,9 @@ void setFont(EpdFont const &font) {
 void epd_update() {
   epd_poweron();
   epd_hl_update_screen(&hl, MODE_GC16, ambient_temp);
-  delay(600);
+  delay(500);
   epd_poweroff();
+  delay(600);
 }
 
 void clearStatusMsg() {

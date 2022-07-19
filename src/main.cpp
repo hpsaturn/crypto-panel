@@ -366,27 +366,12 @@ void reboot(String opts){
   ESP.restart();
 }
 
-void setup() {
-  correct_adc_reference();
-  pinMode(SETUP_BTN_PIN, INPUT_PULLUP);
-  Serial.begin(115200);
-  listCryptos(true);  // load configured crypto currencies from flash
-  BtnConfigPressed = (digitalRead(SETUP_BTN_PIN) == LOW || wakeup_by_setup_button());
-  inSetup = !isConfigured() || BtnConfigPressed;
-
+void setupWiFiCLI(){
   if (inSetup) {
     Serial.println("\r\n== Setup Mode ==\r\n");
     printRequirements();
     Serial.flush();
-    delay(100);
   }
-
-  currency_base = getString(key_cur_base, "eur");
-  ambient_temp = getInt(key_panel_temp, 22);
-  deep_sleep_time = getInt(key_sleep_time, 10) * 60;
-
-  setupGUITask();
-
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
   wcli.begin();
@@ -401,12 +386,34 @@ void setup() {
   while (!isConfigured() || BtnConfigPressed) {  // force to configure the panel.
     wcli.loop();
   }
-  
-  Serial.println("\r\n== Setup ready ==\r\n");
   if(inSetup) renderStaticContent(false);  // restore normal static content
+}
 
+void setupFlags(){
+  listCryptos(true);  // load configured crypto currencies from flash
+  BtnConfigPressed = (digitalRead(SETUP_BTN_PIN) == LOW || wakeup_by_setup_button());
+  inSetup = !isConfigured() || BtnConfigPressed;
+  currency_base = getString(key_cur_base, "eur");
+  ambient_temp = getInt(key_panel_temp, 22);
+  deep_sleep_time = getInt(key_sleep_time, 10) * 60;
+}
+
+void setupWatchdog(){
   esp_task_wdt_init(40, true);
   esp_task_wdt_add(NULL);
+}
+
+void setup() {
+  correct_adc_reference();
+  pinMode(SETUP_BTN_PIN, INPUT_PULLUP);
+  Serial.begin(115200);
+
+  setupFlags();
+  setupGUITask();
+  setupWiFiCLI();
+  setupWatchdog();
+  
+  Serial.println("\r\n== Setup ready ==\r\n");
 
   int boot_count = getInt(key_boot_count, 0);
   bool data_ready = false;
@@ -437,7 +444,6 @@ void setup() {
   }
   epd_update();
   logMemory();
-  delay(300);
   otaLoop();
   suspendDevice();
 }
