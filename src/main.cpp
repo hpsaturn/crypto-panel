@@ -19,15 +19,16 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <Wire.h>
-
 #include <wifi.hpp>
-
+#include "epd_driver.h"
+#include "epd_highlevel.h"
+#include "rom/rtc.h"
+#include "hal.h"
 #include "models.h"
 #include "apis.h"
 #include "settings.h"
-#include "guitools.h"
-#include "hal.h"
 #include "powertools.h"
+#include "guitools.h"
 
 #define MAX_RETRY 2  // max retry download
 
