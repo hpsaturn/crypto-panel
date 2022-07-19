@@ -388,6 +388,7 @@ void setup() {
   setupGUITask();
 
   wcli.setCallback(new mESP32WifiCLICallbacks());
+  wcli.setSilentMode(true);
   wcli.begin();
   wcli.term->add("curAdd", &_cryptoSave, "\tadd one cryptocurrency. Max 3");
   wcli.term->add("curList", &_cryptoList, "\tlist saved cryptocurrencies");
