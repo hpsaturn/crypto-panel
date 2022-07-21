@@ -1,18 +1,14 @@
 [![PlatformIO](https://github.com/hpsaturn/crypto-currency/workflows/PlatformIO/badge.svg)](https://github.com/hpsaturn/crypto-currency/actions/) ![ViewCount](https://views.whatilearened.today/views/github/hpsaturn/crypto-currency.svg) [![Liberapay Status](http://img.shields.io/liberapay/receives/hpsaturn.svg?logo=liberapay)](https://liberapay.com/hpsaturn)
 
-# eInk Crypto Currency
+# Crypto Panel
 
-LilyGo EDP47 ESP32 Crypto currency News and Tracker
+LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 
 ![preview](images/photo.jpg)
-## Prerequisites
 
-Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
+## Firmware install
 
-## Build and Upload
-```bash
-pio run --target upload
-```
+You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/)
 
 ## Panel config
 
@@ -53,9 +49,16 @@ help                  display this help menu
 - [x] diplay news feed and news link with a QR code
 - [x] cofigure the eInk panel via command line
 - [x] run FOTA update without change WiFi credentials
-- [ ] **Coaming soon**: Web installer like [CanAirIO installer](https://canair.io/installer)
+- [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
 - [ ] Bluetooth alternative for set preferences
 
+## Firmware build
+
+Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
+
+```bash
+pio run --target upload
+```
 
 ## Donations
 
