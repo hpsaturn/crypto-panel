@@ -15,6 +15,7 @@ int deep_sleep_time = 600; // Default 10 minutes. Please change this value via C
 
 void suspendDevice() {
   Serial.println("-->[eINK] shutdown..");
+  delay(100);
   esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
   esp_sleep_enable_timer_wakeup(1000000LL * deep_sleep_time);
   esp_deep_sleep_start();
@@ -32,8 +33,6 @@ void rebootDevice() {
 }
 
 void espShallowSleep(int ms) {
-  // commented it for possible fix for issue: https://github.com/Xinyuan-LilyGO/TTGO-T-Display/issues/36
-  esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON);
   esp_sleep_enable_timer_wakeup(ms * 1000);
   delay(100);
   esp_light_sleep_start();
