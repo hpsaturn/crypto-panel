@@ -6,6 +6,19 @@ LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 
 ![preview](images/photo.jpg)
 
+## Features
+
+- Panel installation and configuration via an easy [Web installer](https://hpsaturn.com/crypto-panel-installer/)
+- Configuration via command line (CLI) with the console of the web installer
+- Support hundreds of coins from [Coingecko API](https://api.coingecko.com/api/v3/coins/list?include_platform=false)
+- Random cryptocurrencies news from Cointelegrah and others news portals
+- The coin news are follow via QR code
+- Base currency USD/EUR configurable
+- Firmware update via automatic OTA updates
+- Deep sleep configurable (default: 10min).
+- Panel temperature ambient configurable (for improve colors)
+- Included optional basic 3D-Print frame
+
 ## Firmware install
 
 You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/)
@@ -70,6 +83,14 @@ pio run --target upload
 <a href="images/ethereum_donation_address.png" target="_blank" style="padding-left: 40px" ><img src="images/ethereum_donation_address.png" width="180" ></a>
 
 ## Changelog
+
+**20220713 rev150**
+```
+Easy firmware installer via Browser
+  - added silent call for reduce verbose on serial
+  - added web installer section and updated documentation
+  - refactor load variables and delays on epdiy
+```
 
 **20220713 rev150**
 ```
@@ -141,5 +162,6 @@ Added support to PlatformIO and improved code.
 
 - Thanks to @techiesms by first idea and [original project](https://github.com/techiesms/) for Arduino IDE
 - Thanks to @hacksics from some icons and fonts of project [HA dashboard project](https://github.com/hacksics/lilygo-t5-47-ha)
+- This project use the last version of [EPDIY driver](https://github.com/vroland/epdiy) of @vroland
 
  
