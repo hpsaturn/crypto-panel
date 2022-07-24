@@ -21,7 +21,7 @@ LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 
 ## Firmware install
 
-You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/)
+You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/)  
 
 ## Panel config
 
@@ -53,6 +53,8 @@ setTemp <temperature> config the panel ambient temperature
 reboot                perform a soft ESP32 reboot
 help                  display this help menu
 ```
+
+Please visit the project page in [Hackaday](https://hackaday.io/project/182527-crypto-news-eink-panel) for complete details.
 
 ## TODO
 
