@@ -63,7 +63,7 @@ bool deleteCrypto(String crypto) {
     String key = getKeyName(cryptoId++);
     String crypto_ = cfg.getString(key.c_str(), "");
     if (!dropped && crypto_.equals(crypto)) {
-      Serial.printf("Deleting crypto %d %s\r\n", cryptoId - 1, key.c_str());
+      Serial.printf("\nDeleting crypto [%s][%s]\r\n", key.c_str(), crypto.c_str());
       cfg.remove(key.c_str());
       dropped = true;
       int cryptoId_count = cfg.getInt("crypto_count", 0);
@@ -75,7 +75,6 @@ bool deleteCrypto(String crypto) {
       String key_drop = getKeyName(cryptoId - 2);
       cfg.putString(key_drop.c_str(), crypto_drop);
       cfg.remove(key.c_str());
-      // selectAP(cryptoId - 2);
     }
   }
   cfg.end();
