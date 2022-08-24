@@ -21,7 +21,7 @@ LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 
 ## Firmware install
 
-You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/)  
+You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/). [Video demo](#demo)
 
 ## Panel config
 
@@ -75,6 +75,10 @@ Please install first [PlatformIO](http://platformio.org/) open source ecosystem 
 pio run --target upload
 ```
 
+## Demo
+
+[![Crypto panel](https://raw.githubusercontent.com/hpsaturn/esp32-wifi-cli/master/images/cryptopanel_preview.jpg)](https://youtu.be/oyav6SvN870)
+
 ## Donations
 
 - Via **Ethereum**:
@@ -83,6 +87,7 @@ pio run --target upload
 - Inviting me **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)
 
 <a href="images/ethereum_donation_address.png" target="_blank" style="padding-left: 40px" ><img src="images/ethereum_donation_address.png" width="180" ></a>
+
 
 ## Changelog
 
