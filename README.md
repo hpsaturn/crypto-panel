@@ -21,7 +21,7 @@ LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 
 ## Firmware install
 
-You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/). [Video demo](#demo)
+You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/). Also you can follow the next [video guide](#demo) or follow the instruccions on the [Hackaday](https://hackaday.io/project/182527-crypto-panel) project page that using this web installer.
 
 ## Panel config
 
