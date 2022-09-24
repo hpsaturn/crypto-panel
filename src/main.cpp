@@ -331,7 +331,7 @@ void _setSleepTime(String opts) {
     setInt(key_sleep_time, sleepTime);
   } else {
     Serial.printf("\r\ninvalid sleep time\r\ncurrent sleep time is: %i\r\n",deep_sleep_time / 60);
-    Serial.println("minimum sleep time is 5 minutes. Recommended is 60 minutes or more");
+    Serial.println("minimum sleep time is 5 minutes. Is recommended 60 minutes or more");
   }
 }
 
