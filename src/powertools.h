@@ -11,7 +11,7 @@
 int vref = 1100;
 float curv = 0;
 double_t battery_voltage = 0;
-int deep_sleep_time = 600; // Default 10 minutes. Please change this value via CLI.
+int deep_sleep_time = 1800; // Default 30 minutes. Please change this value via CLI.
 
 void suspendDevice() {
   Serial.println("-->[eINK] shutdown..");
