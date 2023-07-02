@@ -43,8 +43,9 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     
     // Remote OTA config
     // TODO: pass host and target via bluetooth
-    
-    fota.checkURL = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json";
+
+    String manifest = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json"; 
+    fota.setManifestURL(manifest.c_str());
     
     Serial.printf("-->[INFO] OTA: %s@%s\r\n",ESP_ID,ESP_PASS);
 }

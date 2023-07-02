@@ -169,7 +169,7 @@ void drawBattery(int x, int y) {
 void getNTPDateTime() {
   int retry = 0;
   while (!timeClient.update() && retry++ < MAX_RETRY * 3) timeClient.forceUpdate();
-  formattedDate = timeClient.getFormattedDate();
+  formattedDate = timeClient.getFormattedTime();
   int splitT = formattedDate.indexOf("T");
   dayStamp = formattedDate.substring(0, splitT);
   timeStamp = formattedDate.substring(splitT + 1, formattedDate.length() - 1);
