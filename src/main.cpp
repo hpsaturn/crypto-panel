@@ -308,6 +308,9 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
     Serial.println("help\t\t\tdisplay this help menu\r\n");
     printRequirements();
   }
+
+  void onNewWifi(String ssid, String passw) {
+  }
 };
 
 void _setBase (String opts) {
