@@ -148,7 +148,7 @@ void renderPost(String title, String summary, String date = "", String author = 
   setFont(OpenSans10B);
   if (qr != nullptr && qr_size > 0) {
     drawString(60, 370, summary, LEFT);
-    drawQrImage(EPD_WIDTH - 60 - qr_size, 330, qr_size, qr);
+    drawQrImage(EPD_WIDTH - 15 - qr_size, 330, qr_size, qr);
   }
   else {
     drawString(EPD_WIDTH / 2, 370, summary, CENTER); 

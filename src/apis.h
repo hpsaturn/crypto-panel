@@ -183,7 +183,7 @@ bool downloadNewsData() {
     return false;
   }
 
-  SpiRamJsonDocument doc(128000);
+  SpiRamJsonDocument doc(200000);
   DeserializationError error = deserializeJson(doc, http.getStream());
 
   if (error) {

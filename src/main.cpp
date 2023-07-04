@@ -188,7 +188,7 @@ void displayStatusSection() {
   drawBattery(5, 14);
   displayGeneralInfoSection();
   drawRSSI(850, 14, getWifiRSSI());
-  if (devmod) displayDebugInfo();
+  // if (devmod) displayDebugInfo();
   fillRect(1, 16, EPD_WIDTH, 2, Black);
   fillRect(1, EPD_HEIGHT - 39, EPD_WIDTH, 3, Black);
   if(inSetup) renderStatusMsg("waiting for configuration..");
