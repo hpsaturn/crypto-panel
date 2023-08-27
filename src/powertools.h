@@ -14,7 +14,7 @@ double_t battery_voltage = 0;
 int deep_sleep_time = 1800; // Default 30 minutes. Please change this value via CLI.
 
 void suspendDevice() {
-  Serial.println("-->[eINK] shutdown..");
+  Serial.println("[eINK] shutdown..");
   delay(100);
   esp_sleep_enable_ext1_wakeup(GPIO_SEL_39, ESP_EXT1_WAKEUP_ALL_LOW);
   esp_sleep_enable_timer_wakeup(1000000LL * deep_sleep_time);
@@ -22,7 +22,7 @@ void suspendDevice() {
 }
 
 void rebootDevice() {
-  Serial.println("-->[MAIN] Watchdog reached, rebooting..");
+  Serial.println("[MAIN] Watchdog reached, rebooting..");
   esp_wifi_disconnect();
   delay(200);
   esp_wifi_stop();

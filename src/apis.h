@@ -58,14 +58,14 @@ bool downloadBtcAndEthPrice() {
 
   String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + combineCryptoCurrencies() + "&vs_currencies=btc%2Ceth";
 
-  // Serial.println("-->[cAPI] target: "+apiUrl);
+  // Serial.println("[cAPI] target: "+apiUrl);
 
   client.connect("api.coingecko.com", 443);
   http.begin(client, apiUrl);
 
   int code = http.GET();
   if (code != HTTP_CODE_OK) {
-    Serial.printf("-->[cAPI] Error connecting to API while downloading BTC and ETH data. code: %i\r\n", code);
+    Serial.printf("[cAPI] Error connecting to API while downloading BTC and ETH data. code: %i\r\n", code);
     stopClient();
     return false;
   }
@@ -81,13 +81,13 @@ bool downloadBtcAndEthPrice() {
   DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
 
   if (error) {
-    Serial.print(F("-->[cAPI] deserializeJson() failed: "));
+    Serial.print(F("[cAPI] deserializeJson() failed: "));
     Serial.println(error.f_str());
     stopClient();
     return false;
   }
 
-  Serial.println("-->[cAPI] downloaded crypto data");
+  Serial.println("[cAPI] downloaded crypto data");
 
   for (int i = 0; i < cryptosCount; i++) {
     JsonObject json = doc[cryptos[i].apiName];
@@ -109,7 +109,7 @@ bool downloadBaseData(String vsCurrency) {
 
   String apiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + vsCurrency + "&ids=" + combineCryptoCurrencies() + "&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d";
 
-  // Serial.println("-->[cAPI] target: "+apiUrl);
+  // Serial.println("[cAPI] target: "+apiUrl);
 
   client.connect("api.coingecko.com", 443);
 
@@ -117,7 +117,7 @@ bool downloadBaseData(String vsCurrency) {
 
   int code = http.GET();
   if (code != HTTP_CODE_OK) {
-    Serial.printf("-->[cAPI] Error connecting to API while downloading base data. code: %i\r\n", code);
+    Serial.printf("[cAPI] Error connecting to API while downloading base data. code: %i\r\n", code);
     stopClient();
     return false;
   }
@@ -136,13 +136,13 @@ bool downloadBaseData(String vsCurrency) {
   DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
 
   if (error) {
-    Serial.print(F("-->[cAPI] deserializeJson() failed: "));
+    Serial.print(F("[cAPI] deserializeJson() failed: "));
     Serial.println(error.f_str());
     stopClient();
     return false;
   }
 
-  Serial.println("-->[cAPI] downloaded base data");
+  Serial.println("[cAPI] downloaded base data");
 
   for (int i = 0; i < cryptosCount; i++) {
     JsonObject json = doc[i];
@@ -172,13 +172,13 @@ bool downloadNewsData() {
 
   String apiUrl = "http://crypto.hpsaturn.com:8080/posts";
 
-  // Serial.println("-->[cAPI] target news: " + apiUrl);
+  // Serial.println("[cAPI] target news: " + apiUrl);
 
   http.begin(client, apiUrl);
 
   int code = http.GET();
   if (code != HTTP_CODE_OK) {
-    Serial.printf("-->[nAPI] Error connecting to API while downloading news data. code: %i\r\n", code);
+    Serial.printf("[nAPI] Error connecting to API while downloading news data. code: %i\r\n", code);
     stopClient();
     return false;
   }
@@ -187,13 +187,13 @@ bool downloadNewsData() {
   DeserializationError error = deserializeJson(doc, http.getStream());
 
   if (error) {
-    Serial.print(F("-->[nAPI] deserializeJson() failed: "));
+    Serial.print(F("[nAPI] deserializeJson() failed: "));
     Serial.println(error.f_str());
     stopClient();
     return false;
   }
 
-  Serial.println("-->[nAPI] downloaded news data");
+  Serial.println("[nAPI] downloaded news data");
 
   news.title = doc["title"] | "";
   news.author = doc["author"] | "";

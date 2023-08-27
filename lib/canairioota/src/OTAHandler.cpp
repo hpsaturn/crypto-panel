@@ -19,17 +19,17 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
                 ota.getInstance()->m_pOTAHandlerCallbacks->onStart();
         })
         .onEnd([]() {
-            Serial.println("\n-->[OTA] success!");
+            Serial.println("\n[OTA] success!");
             if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
                 ota.getInstance()->m_pOTAHandlerCallbacks->onEnd();
         })
         .onProgress([](unsigned int progress, unsigned int total) {
-            Serial.printf("-->[OTA] Progress: %u%%\r", (progress / (total / 100)));            
+            Serial.printf("[OTA] Progress: %u%%\r", (progress / (total / 100)));            
             if(ota.getInstance()->m_pOTAHandlerCallbacks!=nullptr)
                 ota.getInstance()->m_pOTAHandlerCallbacks->onProgress(progress,total);
         })
         .onError([](ota_error_t error) {
-            Serial.printf("-->[E][OTA] Error[%u]: ", error);
+            Serial.printf("[E][OTA] Error[%u]: ", error);
             if (error == OTA_AUTH_ERROR)         Serial.println("Auth Failed");
             else if (error == OTA_BEGIN_ERROR)   Serial.println("Begin Failed");
             else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
@@ -47,21 +47,21 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
     String manifest = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json"; 
     fota.setManifestURL(manifest.c_str());
     
-    Serial.printf("-->[INFO] OTA: %s@%s\r\n",ESP_ID,ESP_PASS);
+    Serial.printf("[INFO] OTA: %s@%s\r\n",ESP_ID,ESP_PASS);
 }
 
 void OTAHandler::checkRemoteOTA(bool notify) {
     bool updatedNeeded = fota.execHTTPcheck();
     if (updatedNeeded) {
-        Serial.println("-->[FOTA] starting upgrade..");
+        Serial.println("[FOTA] starting upgrade..");
         if(_onUpdateMsgCb != nullptr) 
             _onUpdateMsgCb(String(fota.getPayloadVersion()).c_str());
         delay(100);
-        Serial.println("-->[FOTA] incremented watchdog time");
+        Serial.println("[FOTA] incremented watchdog time");
         esp_task_wdt_init(120,0); 
         fota.execOTA();
     } else if (notify)
-        Serial.println("-->[FOTA] not need update");
+        Serial.println("[FOTA] not need update");
 }
 
 void OTAHandler::remoteOTAcheckloop() {
