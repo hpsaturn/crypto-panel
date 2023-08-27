@@ -38,15 +38,14 @@ bool BtnConfigPressed;
 bool inSetup;
 
 // NTP time
-WiFiUDP ntpUDP;
-NTPClient timeClient(ntpUDP);
-String formattedDate;
-String dayStamp;
+tm timeinfo;
+time_t now;
+long unsigned lastNTPtime;
+unsigned long lastEntryTime;
 String timeStamp;
-int gmtOffset_sec = 7200;  // GMT Offset in seconds. GMT Offset is 0, US (-5Hrs) is typically -18000.
 
 void logMemory() {
-  if (devmod) Serial.printf("-->[IHAL] Used PSRAM: %d\r\n", ESP.getPsramSize() - ESP.getFreePsram());
+  if (devmod) Serial.printf("[IHAL] Used PSRAM: %d\r\n", ESP.getPsramSize() - ESP.getFreePsram());
 }
 
 bool isConfigured() {
@@ -90,7 +89,7 @@ String getFormatCurrencyValue(double value) {
 }
 
 void renderCryptoCard(Crypto crypto) {
-  if (devmod) Serial.printf("-->[eINK] Crypto Name - %s\r\n", crypto.symbol.c_str());
+  if (devmod) Serial.printf("[eINK] Crypto Name - %s\r\n", crypto.symbol.c_str());
 
   setFont(OpenSans14B);
 
@@ -99,15 +98,15 @@ void renderCryptoCard(Crypto crypto) {
 
   String Str = getFormatCurrencyValue(crypto.price.inr);
   char *string2 = &Str[0];
-  if (devmod) Serial.printf("-->[eINK] Price USD - %s\r\n", Str.c_str());
+  if (devmod) Serial.printf("[eINK] Price USD - %s\r\n", Str.c_str());
   drawString(345, cursor_y, String(string2), RIGHT);
 
-  if (devmod) Serial.printf("-->[eINK] Day change - %s\r\n", formatPercentageChange(crypto.dayChange).c_str());
+  if (devmod) Serial.printf("[eINK] Day change - %s\r\n", formatPercentageChange(crypto.dayChange).c_str());
   Str = getFormatCurrencyValue(crypto.dayChange);
   char *string3 = &Str[0];
   drawString(560, cursor_y, String(string3), RIGHT);
 
-  if (devmod) Serial.printf("-->[eINK] Week change - %s\r\n", formatPercentageChange(crypto.weekChange).c_str());
+  if (devmod) Serial.printf("[eINK] Week change - %s\r\n", formatPercentageChange(crypto.weekChange).c_str());
   Str = getFormatCurrencyValue(crypto.weekChange);
   char *string4 = &Str[0];
   drawString(EPD_WIDTH - 130, cursor_y, String(string4), RIGHT);
@@ -116,7 +115,7 @@ void renderCryptoCard(Crypto crypto) {
 }
 
 void updateData() {
-  if (devmod) Serial.println("-->[eINK] Rendering partial GUI..");
+  if (devmod) Serial.println("[eINK] Rendering partial GUI..");
   for (int i = 0; i < cryptosCount; i++) {
     cursor_y = (45 * (i + 3));
     renderCryptoCard(cryptos[i]);
@@ -166,13 +165,18 @@ void drawBattery(int x, int y) {
   drawString(10, STATUSY, "Batt:" + String(battery_voltage) + "v", LEFT);
 }
 
-void getNTPDateTime() {
-  int retry = 0;
-  while (!timeClient.update() && retry++ < MAX_RETRY * 3) timeClient.forceUpdate();
-  formattedDate = timeClient.getFormattedTime();
-  int splitT = formattedDate.indexOf("T");
-  dayStamp = formattedDate.substring(0, splitT);
-  timeStamp = formattedDate.substring(splitT + 1, formattedDate.length() - 1);
+bool getNTPtime(int sec) {
+  uint32_t start = millis();
+  do {
+    time(&now);
+    localtime_r(&now, &timeinfo);
+  } while (((millis() - start) <= (1000 * sec)) && (timeinfo.tm_year < (2016 - 1900)));
+  if (timeinfo.tm_year <= (2016 - 1900)) return false;  // the NTP call was not successful
+  char time_output[30];
+  strftime(time_output, 30, "%a  %d-%m-%y %T", localtime(&now));
+  timeStamp = String(time_output);
+  Serial.printf("[cNTP] %s\r\n",time_output);
+  return true;
 }
 
 void displayGeneralInfoSection() {
@@ -180,8 +184,8 @@ void displayGeneralInfoSection() {
   // drawFastHLine(5, 30, SCREEN_WIDTH - 8, Black);
   String rev = "rev" + String(REVISION);
   drawString(EPD_WIDTH - 10, STATUSY, rev, RIGHT);
-  getNTPDateTime();
-  drawString(EPD_WIDTH / 2, 14, "Refreshed: " + dayStamp + " at " + timeStamp, CENTER);
+  getNTPtime(3);
+  drawString(EPD_WIDTH / 2, 14, "Refreshed on " + timeStamp, CENTER);
 }
 
 void displayStatusSection() {
@@ -213,12 +217,12 @@ void eInkTask(void *pvParameters) {
   logMemory();
 
   int boot_count = getInt(key_boot_count, 0);
-  if(devmod) Serial.printf("-->[eINK] boot_count: %i\r\n", boot_count);
+  if(devmod) Serial.printf("[eINK] boot_count: %i\r\n", boot_count);
 
   int reset_reason = rtc_get_reset_reason(0);
-  if (devmod) Serial.printf("-->[eINK] reset_reason: %i\r\n", reset_reason);
+  if (devmod) Serial.printf("[eINK] reset_reason: %i\r\n", reset_reason);
   
-  if (devmod) Serial.println("-->[eINK] Drawing static GUI..");
+  if (devmod) Serial.println("[eINK] Drawing static GUI..");
   if (boot_count == 0 || reset_reason == 1 || inSetup)
     renderStaticContent(inSetup);
   else
@@ -235,7 +239,7 @@ void eInkTask(void *pvParameters) {
 }
 
 void setupGUITask() {
-  if (devmod) Serial.println("\r\n-->[eINK] Starting eINK Task..");
+  if (devmod) Serial.println("\r\n[eINK] Starting eINK Task..");
   xTaskCreatePinnedToCore(
       eInkTask,    /* Function to implement the task */
       "eInkTask ", /* Name of the task */
@@ -257,7 +261,7 @@ void renderNetworkError() {
 }
 
 void renderNews() {
-  if (devmod) Serial.println("-->[nAPI] News Author: " + news.author);
+  if (devmod) Serial.println("[nAPI] News Author: " + news.author);
 
   uint32_t qrlenght = news.qrsize * news.qrsize;
   uint8_t *buffer = (uint8_t *)ps_malloc(qrlenght / 2);
@@ -424,8 +428,6 @@ void setup() {
 
   if (wifiInit()) {
     otaMessageCb(&onUpdateMessage);
-    timeClient.begin();
-    timeClient.setTimeOffset(gmtOffset_sec);
 
     int retry = 0;
     if (boot_count == 0) {  // Only in the full refresh it does retry download

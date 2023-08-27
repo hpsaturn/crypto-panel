@@ -21,9 +21,17 @@ void otaInit() {
   ota.setup("EPD47ESP32", "epd47esp32");
 }
 
+void ntpInit() {
+  configTime(0, 0, NTP_SERVER);
+  setenv("TZ", TZ_INFO, 1);
+}
+
 bool wifiInit() {
   bool wifi_connected = WiFi.status() == WL_CONNECTED;
-  if (wifi_connected) otaInit();
+  if (wifi_connected) {
+    otaInit();
+    ntpInit();
+  }
   return wifi_connected;
 }
 
