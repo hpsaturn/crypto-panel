@@ -2,14 +2,14 @@
  * Crypto Currency Monitor using ESP32 & E-Paper Display
  * =====================================================
  *
- * Original project for Arduino IDE:
- * https://www.youtube.com/techiesms
- * Author: techiesms
- *
  * PlatformIO improvement and Crypto News API integration:
  * https://github.com/hpsaturn/crypto-currency
  * Author: @hpsaturn
- * 2021
+ * 2021 - 2023
+ * 
+ * Original project for Arduino IDE:
+ * https://www.youtube.com/techiesms
+ * Author: techiesms
  */
 
 #ifndef BOARD_HAS_PSRAM

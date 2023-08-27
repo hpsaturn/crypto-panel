@@ -91,7 +91,20 @@ pio run --target upload
 
 ## Changelog
 
-**20220713 rev150**
+**20230827 rev160**
+```
+Multiple changes from rev150
+  - disable OTA update (Only FOTA)
+  - removed old NTP client library instead ESP32 internal client
+  - reduced pem chain to only two certs
+  - v0.1.3 Full URL support. Cuttpy API issues fixed
+  - Espressif32 v6.3.2 support
+  - freezes and updated core libraries (EPDIY, FOTA, NTP libs)
+  - feature added: wakeup and setup via right button
+  - new CLI settings: setSleep, setTemp and setBase
+```
+
+**20220713 rev153**
 ```
 Easy firmware installer via Browser
   - added silent call for reduce verbose on serial
@@ -128,7 +141,7 @@ Added WDT, status queue msg, improved UI:
   - New error msgs on WiFi lost and API fails
   - Final msg on status bar is joined with data render
   - Battery level improvements for USB/Battery modes
-``` 
+```
 
 **20210925 rev089**
 
@@ -138,7 +151,7 @@ Added OTA updates (local and remote)
   - Python tool for deployment via PlatformIO
   - Improved OTAHandler from CanAir.IO project
   - Added UI feedback when new OTA is arrived
-``` 
+```
 
 **20210924 rev076**
 
@@ -150,7 +163,7 @@ Migration from LilyGo forked library to vroland/epdiy repo
   - added missing fonts. Improved static fields refresh
   - added UI tools from github.com/hacksics/lilygo-t5-47-ha
   - working again all with new driver, ~20 seg on init
-``` 
+```
 
 **20210922 rev039 (First version)**
 
