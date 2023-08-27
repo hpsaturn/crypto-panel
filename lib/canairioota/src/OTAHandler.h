@@ -20,6 +20,7 @@ class OTAHandler {
         void setCallbacks(OTAHandlerCallbacks* pCallBacks);
         void setOnUpdateMessageCb(voidMessageCbFn cb);
         void loop();
+        void setupRemoteOTA();
         void checkRemoteOTA(bool notify = true);
         void setBaud(int baud);
         OTAHandler* getInstance();

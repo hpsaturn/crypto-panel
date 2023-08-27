@@ -39,15 +39,16 @@ void OTAHandler::setup(const char* ESP_ID, const char* ESP_PASS) {
                 ota.getInstance()->m_pOTAHandlerCallbacks->onError();
         });
 
-    ArduinoOTA.begin();
-    
+    ArduinoOTA.begin();   
+    Serial.printf("[INFO] OTA: %s@%s\r\n",ESP_ID,ESP_PASS);
+}
+
+void OTAHandler::setupRemoteOTA() {
     // Remote OTA config
     // TODO: pass host and target via bluetooth
-
     String manifest = "http://influxdb.canair.io:8080/releases/" + String(TARGET) + "/firmware_" + String(FLAVOR) + ".json"; 
     fota.setManifestURL(manifest.c_str());
-    
-    Serial.printf("[INFO] OTA: %s@%s\r\n",ESP_ID,ESP_PASS);
+ 
 }
 
 void OTAHandler::checkRemoteOTA(bool notify) {

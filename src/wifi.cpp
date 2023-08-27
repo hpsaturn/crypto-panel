@@ -12,13 +12,14 @@ void otaMessageCb(voidMessageCbFn cb) {
 
 void otaLoop() {
   if (WiFi.isConnected()) {
-    ota.loop();
+    // ota.loop();
     ota.checkRemoteOTA();
   }
 }
 
 void otaInit() {
-  ota.setup("EPD47ESP32", "epd47esp32");
+  // ota.setup("EPD47ESP32", "epd47esp32");
+  ota.setupRemoteOTA();
 }
 
 void ntpInit() {
