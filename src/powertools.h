@@ -79,7 +79,7 @@ double_t get_battery_percentage() {
   uint16_t v = analogRead(BATT_PIN);
   battery_voltage = ((double_t)v / 4095.0) * 2.0 * 3.3 * (vref / 1000.0);
   double_t percent = battCalcPercentage(battery_voltage);
-  log_i("[vADC] %dv", battery_voltage);
+  log_i("[vADC] %Lfv", battery_voltage);
   log_i("[vADC] Battery charge at %Lf%s", percent, "%");
   epd_poweroff();
   delay(50);
