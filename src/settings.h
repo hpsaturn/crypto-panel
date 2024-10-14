@@ -6,6 +6,12 @@ const char* key_boot_count = "key_boot_count";
 const char* key_panel_temp = "key_panel_temp";
 const char* key_sleep_time = "key_sleep_time";
 const char* key_cur_base = "key_cur_base";
+const char* key_ntp_server = "kntpserver";
+const char* key_tzone = "ktzone";
+
+// change these params via CLI:
+const char * default_server = "pool.ntp.org";  
+const char * default_tzone = "CET-1CEST,M3.5.0,M10.5.0/3";
 
 String getKeyName(int cryptoId) {
   char key[15];

@@ -33,7 +33,6 @@
 #define MAX_RETRY 2  // max retry download
 
 String currency_base = "eur"; // default currency. Please change this value via CLI.
-bool devmod = (bool)CORE_DEBUG_LEVEL;  // extra debug msgs
 bool BtnConfigPressed;
 bool inSetup;
 
@@ -45,7 +44,7 @@ unsigned long lastEntryTime;
 String timeStamp;
 
 void logMemory() {
-  if (devmod) Serial.printf("[IHAL] Used PSRAM: %d\r\n", ESP.getPsramSize() - ESP.getFreePsram());
+  log_d("[IHAL] Used PSRAM: %d", ESP.getPsramSize() - ESP.getFreePsram());
 }
 
 bool isConfigured() {
@@ -89,7 +88,7 @@ String getFormatCurrencyValue(double value) {
 }
 
 void renderCryptoCard(Crypto crypto) {
-  if (devmod) Serial.printf("[eINK] Crypto Name - %s\r\n", crypto.symbol.c_str());
+  log_d("[eINK] Crypto Name - %s", crypto.symbol.c_str());
 
   setFont(OpenSans14B);
 
@@ -98,15 +97,15 @@ void renderCryptoCard(Crypto crypto) {
 
   String Str = getFormatCurrencyValue(crypto.price.inr);
   char *string2 = &Str[0];
-  if (devmod) Serial.printf("[eINK] Price USD - %s\r\n", Str.c_str());
+  log_d("[eINK] Price USD - %s", Str.c_str());
   drawString(345, cursor_y, String(string2), RIGHT);
 
-  if (devmod) Serial.printf("[eINK] Day change - %s\r\n", formatPercentageChange(crypto.dayChange).c_str());
+  log_d("[eINK] Day change - %s", formatPercentageChange(crypto.dayChange).c_str());
   Str = getFormatCurrencyValue(crypto.dayChange);
   char *string3 = &Str[0];
   drawString(560, cursor_y, String(string3), RIGHT);
 
-  if (devmod) Serial.printf("[eINK] Week change - %s\r\n", formatPercentageChange(crypto.weekChange).c_str());
+  log_d("[eINK] Week change - %s", formatPercentageChange(crypto.weekChange).c_str());
   Str = getFormatCurrencyValue(crypto.weekChange);
   char *string4 = &Str[0];
   drawString(EPD_WIDTH - 130, cursor_y, String(string4), RIGHT);
@@ -115,7 +114,7 @@ void renderCryptoCard(Crypto crypto) {
 }
 
 void updateData() {
-  if (devmod) Serial.println("[eINK] Rendering partial GUI..");
+  log_i("[eINK] Rendering partial GUI..");
   for (int i = 0; i < cryptosCount; i++) {
     cursor_y = (45 * (i + 3));
     renderCryptoCard(cryptos[i]);
@@ -165,17 +164,26 @@ void drawBattery(int x, int y) {
   drawString(10, STATUSY, "Batt:" + String(battery_voltage) + "v", LEFT);
 }
 
+void updateTimeSettings() {
+  String server = getString(key_ntp_server, default_server );
+  String tzone = getString(key_tzone, default_tzone);
+  log_i("ntp server: %s - tzone: %s", server.c_str(), tzone.c_str());
+  configTime(GMT_OFFSET_SEC, DAY_LIGHT_OFFSET_SEC, server.c_str(), NTP_SERVER2);
+  setenv("TZ", tzone.c_str(), 1);  
+  tzset();
+}
+
 bool getNTPtime(int sec) {
-  uint32_t start = millis();
-  do {
-    time(&now);
-    localtime_r(&now, &timeinfo);
-  } while (((millis() - start) <= (1000 * sec)) && (timeinfo.tm_year < (2016 - 1900)));
+  int sec_counter = 0;
+  while (!getLocalTime(&timeinfo) && sec_counter++ < sec) {
+    log_i(".");
+    delay(1000);
+  }
   if (timeinfo.tm_year <= (2016 - 1900)) return false;  // the NTP call was not successful
   char time_output[30];
-  strftime(time_output, 30, "%a  %d-%m-%y %T", localtime(&now));
+  strftime(time_output, 30, "%a  %d-%m-%y %T", &timeinfo);
   timeStamp = String(time_output);
-  Serial.printf("[cNTP] %s\r\n",time_output);
+  log_i("[cNTP] %s\r\n",time_output);
   return true;
 }
 
@@ -184,6 +192,7 @@ void displayGeneralInfoSection() {
   // drawFastHLine(5, 30, SCREEN_WIDTH - 8, Black);
   String rev = "rev" + String(REVISION);
   drawString(EPD_WIDTH - 10, STATUSY, rev, RIGHT);
+  updateTimeSettings();
   getNTPtime(3);
   drawString(EPD_WIDTH / 2, 14, "Refreshed on " + timeStamp, CENTER);
 }
@@ -217,12 +226,12 @@ void eInkTask(void *pvParameters) {
   logMemory();
 
   int boot_count = getInt(key_boot_count, 0);
-  if(devmod) Serial.printf("[eINK] boot_count: %i\r\n", boot_count);
+  log_d("[eINK] boot_count: %i", boot_count);
 
   int reset_reason = rtc_get_reset_reason(0);
-  if (devmod) Serial.printf("[eINK] reset_reason: %i\r\n", reset_reason);
+  log_d("[eINK] reset_reason: %i", reset_reason);
   
-  if (devmod) Serial.println("[eINK] Drawing static GUI..");
+  log_i("[eINK] Drawing static GUI..");
   if (boot_count == 0 || reset_reason == 1 || inSetup)
     renderStaticContent(inSetup);
   else
@@ -239,7 +248,7 @@ void eInkTask(void *pvParameters) {
 }
 
 void setupGUITask() {
-  if (devmod) Serial.println("\r\n[eINK] Starting eINK Task..");
+  log_i("[eINK] Starting eINK Task..");
   xTaskCreatePinnedToCore(
       eInkTask,    /* Function to implement the task */
       "eInkTask ", /* Name of the task */
@@ -261,7 +270,7 @@ void renderNetworkError() {
 }
 
 void renderNews() {
-  if (devmod) Serial.println("[nAPI] News Author: " + news.author);
+  log_i("[nAPI] News Author: %s", news.author.c_str());
 
   uint32_t qrlenght = news.qrsize * news.qrsize;
   uint8_t *buffer = (uint8_t *)ps_malloc(qrlenght / 2);
@@ -296,25 +305,11 @@ void printRequirements() {
 }
 
 class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
-  void onWifiStatus(bool isConnected) {
-  }
+  void onWifiStatus(bool isConnected) {}
 
-  // Callback for extend the help menu.
-  void onHelpShow() {
-    Serial.println("\r\nCrypto Panel Commands:\r\n");
-    Serial.println("curAdd <crypto>   \tadd one cryptocurrency");
-    Serial.println("curList\t\t\tlist saved cryptocurrencies");
-    Serial.println("curDrop <crypto> \tdelete one cryptocurrency");
-    Serial.println("setBase <base>\t\tset base currency (USD/EUR)");
-    Serial.println("setSleep <time>   \tconfig deep sleep time in minutes");
-    Serial.println("setTemp <temperature>\tconfig the panel ambient temperature");
-    Serial.println("reboot\t\t\tperform a soft ESP32 reboot");
-    Serial.println("help\t\t\tdisplay this help menu\r\n");
-    printRequirements();
-  }
+  void onHelpShow() { printRequirements(); }
 
-  void onNewWifi(String ssid, String passw) {
-  }
+ void onNewWifi(String ssid, String passw) {}
 };
 
 void _setBase (char *args, Stream *response) {
@@ -325,8 +320,8 @@ void _setBase (char *args, Stream *response) {
     currency_base = base;
     setString(key_cur_base, base);
   } else {
-    Serial.println("\r\nInvalid base currency. Please enter USD or EUR");
-    Serial.printf("Current base currency: %s\r\n", currency_base.c_str());
+    response->println("\r\nInvalid base currency. Please enter USD or EUR");
+    response->printf("Current base currency: %s\r\n", currency_base.c_str());
   }
 }
 
@@ -337,8 +332,8 @@ void _setSleep(char *args, Stream *response) {
     deep_sleep_time = sleepTime * 60;
     setInt(key_sleep_time, sleepTime);
   } else {
-    Serial.printf("\r\ninvalid sleep time\r\ncurrent sleep time is: %i\r\n",deep_sleep_time / 60);
-    Serial.println("minimum sleep time is 5 minutes. Is recommended 60 minutes or more");
+    response->printf("\r\ninvalid sleep time\r\ncurrent sleep time is: %i\r\n",deep_sleep_time / 60);
+    response->println("minimum sleep time is 5 minutes. Is recommended 60 minutes or more");
   }
 }
 
@@ -346,12 +341,31 @@ void _setTemp(char *args, Stream *response) {
   Pair<String, String> operands = wcli.parseCommand(args);
   int temp = operands.first().toInt();
   if (temp < 10 || temp > 50) {
-    Serial.println("\r\nplease enter a temperature value between 10 and 50");
-    Serial.printf("current temperature is: %d\r\n",ambient_temp);
+    response->println("\r\nplease enter a temperature value between 10 and 50");
+    response->printf("current temperature is: %d\r\n",ambient_temp);
     return;
   }
   ambient_temp = temp;
   setInt(key_panel_temp, temp);
+}
+
+void _showTime(char *args, Stream *response) {
+  if (!getNTPtime(4)) {
+    response->println("No time available (yet)");
+    return;
+  }
+  response->println(&timeinfo, "%A, %B %d %Y %H:%M:%S");   
+}
+
+void _setTimeZone(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
+  String tzone = operands.first();
+  if (tzone.isEmpty()) {
+    response->println(wcli.getString(key_tzone, default_tzone));
+    return;
+  }
+  setString(key_tzone, tzone);
+  updateTimeSettings();
 }
 
 void _cryptoList(char *args, Stream *response){
@@ -370,6 +384,13 @@ void _cryptoSave(char *args, Stream *response) {
   saveCrypto(crypto);
 }
 
+void _wipe(char *args, Stream *response) {
+  response->println("Clearing device to defaults..");
+  wcli.clearSettings();
+  cfg.clear();
+  response->println("done");
+}
+
 void reboot(char *args, Stream *response){
   ESP.restart();
 }
@@ -382,14 +403,17 @@ void setupWiFiCLI(){
   }
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
-  wcli.add("curAdd", &_cryptoSave, "\t\tadd one cryptocurrency. Max 3");
+  wcli.add("curAdd", &_cryptoSave, "\tadd one cryptocurrency. Max 3");
   wcli.add("curList", &_cryptoList, "\tlist saved cryptocurrencies");
   wcli.add("curDrop", &_cryptoDelete, "\tdelete one cryptocurrency");
   wcli.add("setBase", &_setBase, "\tset base currency (USD/EUR)");
   wcli.add("setSleep", &_setSleep, "\tconfig deep sleep time");
   wcli.add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");
-  wcli.add("reboot", &reboot, "\t\tperform panel reboot");
-  wcli.begin();
+  wcli.add("setTZone", &_setTimeZone, "\tset TZONE. https://tinyurl.com/4s44uyzn");
+  wcli.add("time", &_showTime, "\t\tprint the current time"); 
+  wcli.add("wipe", &_wipe, "\t\twipe preferences to factory default");
+  wcli.add("reboot", &reboot, "\tperform panel reboot");
+  wcli.begin("cpanel");
 
   while (!isConfigured() || BtnConfigPressed) {  // force to configure the panel.
     wcli.loop();
