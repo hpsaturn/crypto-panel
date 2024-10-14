@@ -65,6 +65,7 @@ Please visit the project page in [Hackaday](https://hackaday.io/project/182527-c
 - [x] cofigure the eInk panel via command line
 - [x] run FOTA update without change WiFi credentials
 - [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
+- [x] NTP time zone via CLI
 - [ ] Bluetooth alternative for set preferences
 
 ## Firmware build

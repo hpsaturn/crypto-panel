@@ -317,8 +317,8 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
   }
 };
 
-void _setBase (String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void _setBase (char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String base = operands.first();
   base.toLowerCase();
   if (base.equals("usd") || base.equals("eur")) {
@@ -330,8 +330,8 @@ void _setBase (String opts) {
   }
 }
 
-void _setSleepTime(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void _setSleep(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   int sleepTime = operands.first().toInt();
   if (sleepTime >= 5) {
     deep_sleep_time = sleepTime * 60;
@@ -342,8 +342,8 @@ void _setSleepTime(String opts) {
   }
 }
 
-void _setTemp(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void _setTemp(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   int temp = operands.first().toInt();
   if (temp < 10 || temp > 50) {
     Serial.println("\r\nplease enter a temperature value between 10 and 50");
@@ -354,23 +354,23 @@ void _setTemp(String opts) {
   setInt(key_panel_temp, temp);
 }
 
-void _cryptoList(String opts){
+void _cryptoList(char *args, Stream *response){
   listCryptos();
 }
 
-void _cryptoDelete(String opts){
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void _cryptoDelete(char *args, Stream *response){
+  Pair<String, String> operands = wcli.parseCommand(args);
   String crypto = operands.first();
   deleteCrypto(crypto);
 }
 
-void _cryptoSave(String opts) {
-  maschinendeck::Pair<String, String> operands = maschinendeck::SerialTerminal::ParseCommand(opts);
+void _cryptoSave(char *args, Stream *response) {
+  Pair<String, String> operands = wcli.parseCommand(args);
   String crypto = operands.first();
   saveCrypto(crypto);
 }
 
-void reboot(String opts){
+void reboot(char *args, Stream *response){
   ESP.restart();
 }
 
@@ -382,14 +382,14 @@ void setupWiFiCLI(){
   }
   wcli.setCallback(new mESP32WifiCLICallbacks());
   wcli.setSilentMode(true);
+  wcli.add("curAdd", &_cryptoSave, "\t\tadd one cryptocurrency. Max 3");
+  wcli.add("curList", &_cryptoList, "\tlist saved cryptocurrencies");
+  wcli.add("curDrop", &_cryptoDelete, "\tdelete one cryptocurrency");
+  wcli.add("setBase", &_setBase, "\tset base currency (USD/EUR)");
+  wcli.add("setSleep", &_setSleep, "\tconfig deep sleep time");
+  wcli.add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");
+  wcli.add("reboot", &reboot, "\t\tperform panel reboot");
   wcli.begin();
-  wcli.term->add("curAdd", &_cryptoSave, "\tadd one cryptocurrency. Max 3");
-  wcli.term->add("curList", &_cryptoList, "\tlist saved cryptocurrencies");
-  wcli.term->add("curDrop", &_cryptoDelete, "\tdelete one cryptocurrency");
-  wcli.term->add("setBase", &_setBase, "\tset base currency (USD/EUR)");
-  wcli.term->add("setSleep", &_setSleepTime, "config deep sleep time");
-  wcli.term->add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");
-  wcli.term->add("reboot", &reboot, "\tperform panel reboot\r\n");
 
   while (!isConfigured() || BtnConfigPressed) {  // force to configure the panel.
     wcli.loop();

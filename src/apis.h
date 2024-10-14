@@ -58,7 +58,7 @@ bool downloadBtcAndEthPrice() {
 
   String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + combineCryptoCurrencies() + "&vs_currencies=btc%2Ceth";
 
-  // Serial.println("[cAPI] target: "+apiUrl);
+  log_i("[cAPI] target: %s",apiUrl.c_str());
 
   client.connect("api.coingecko.com", 443);
   http.begin(client, apiUrl);
@@ -109,7 +109,7 @@ bool downloadBaseData(String vsCurrency) {
 
   String apiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + vsCurrency + "&ids=" + combineCryptoCurrencies() + "&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d";
 
-  // Serial.println("[cAPI] target: "+apiUrl);
+  log_i("[cAPI] target: %s",apiUrl.c_str());
 
   client.connect("api.coingecko.com", 443);
 
