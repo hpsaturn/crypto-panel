@@ -8,7 +8,7 @@ WiFiClientSecure client;
 
 const char* coingeckoSslFingerprint = "8925605d5044fcc0852b98d7d3665228684de6e2";
 
-struct SpiRamAllocator {
+struct SpiRamAllocator : ArduinoJson::Allocator {
   void* allocate(size_t size) {
     return heap_caps_malloc(size, MALLOC_CAP_SPIRAM);
   }
@@ -22,7 +22,7 @@ struct SpiRamAllocator {
   }
 };
 
-using SpiRamJsonDocument = BasicJsonDocument<SpiRamAllocator>;
+SpiRamAllocator allocator;
 
 String combineCryptoCurrencies() {
   String cryptosString = "";
@@ -58,7 +58,7 @@ bool downloadBtcAndEthPrice() {
 
   String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + combineCryptoCurrencies() + "&vs_currencies=btc%2Ceth";
 
-  // Serial.println("[cAPI] target: "+apiUrl);
+  log_i("[cAPI] target: %s",apiUrl.c_str());
 
   client.connect("api.coingecko.com", 443);
   http.begin(client, apiUrl);
@@ -70,14 +70,14 @@ bool downloadBtcAndEthPrice() {
     return false;
   }
 
-  StaticJsonDocument<512> filter;
+  JsonDocument filter;
 
   for (int i = 0; i < cryptosCount; i++) {
     filter[cryptos[i].apiName]["btc"] = true;
     filter[cryptos[i].apiName]["eth"] = true;
   }
 
-  DynamicJsonDocument doc(4096);
+  JsonDocument doc;
   DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
 
   if (error) {
@@ -109,7 +109,7 @@ bool downloadBaseData(String vsCurrency) {
 
   String apiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + vsCurrency + "&ids=" + combineCryptoCurrencies() + "&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d";
 
-  // Serial.println("[cAPI] target: "+apiUrl);
+  log_i("[cAPI] target: %s",apiUrl.c_str());
 
   client.connect("api.coingecko.com", 443);
 
@@ -122,7 +122,7 @@ bool downloadBaseData(String vsCurrency) {
     return false;
   }
 
-  StaticJsonDocument<512> filter;
+  JsonDocument filter;
 
   for (int i = 0; i < cryptosCount; i++) {
     filter[i]["id"] = true;
@@ -132,7 +132,7 @@ bool downloadBaseData(String vsCurrency) {
     filter[i]["price_change_percentage_7d_in_currency"] = true;
   }
 
-  DynamicJsonDocument doc(4096);
+  JsonDocument doc;
   DeserializationError error = deserializeJson(doc, http.getStream(), DeserializationOption::Filter(filter));
 
   if (error) {
@@ -183,7 +183,7 @@ bool downloadNewsData() {
     return false;
   }
 
-  SpiRamJsonDocument doc(200000);
+  JsonDocument doc(&allocator);
   DeserializationError error = deserializeJson(doc, http.getStream());
 
   if (error) {
