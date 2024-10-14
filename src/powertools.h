@@ -12,6 +12,7 @@ int vref = 1100;
 float curv = 0;
 double_t battery_voltage = 0;
 int deep_sleep_time = 1800; // Default 30 minutes. Please change this value via CLI.
+                            // For enable the CLI, push the last button in the panel.
 
 void suspendDevice() {
   Serial.println("[eINK] shutdown..");
@@ -41,7 +42,7 @@ void espShallowSleep(int ms) {
 void correct_adc_reference() {
   // Correct the ADC reference voltage
   esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+  esp_adc_cal_value_t val_type = esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_WIDTH_BIT_12, 1100, &adc_chars);
   if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
     log_i("eFuse Vref:%u mV", adc_chars.vref);
     vref = adc_chars.vref;
