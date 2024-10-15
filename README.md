@@ -27,32 +27,7 @@ You able to install this firmware on only one click, without compiling nothing o
 
 After the boot or first restart, please enter via serial console or terminal and please configure your settings, at least one WiFi network and 3 currencies. Type `help` and you should able to have the next menu:
 
-```bash
-ESP32WifiCLI Usage:
-
-setSSID "YOUR SSID"   set the SSID into quotes
-setPASW "YOUR PASW"   set the password into quotes
-connect               save and connect to the network
-list                  list all saved networks
-select <number>       select the default AP (default: last saved)
-mode <single/multi>   connection mode. Multi AP is a little slow
-scan                  scan for available networks
-status                print the current WiFi status
-disconnect            disconnect from the network
-delete "SSID"         remove saved network
-help                  print this help
-
-Crypto Panel Commands:
-
-curAdd <crypto>       add one cryptocurrency
-curList               list current saved cryptocurrencies
-curDrop <crypto>      delete one cryptocurrency
-setBase <base>        set base currency (USD/EUR)
-setSleep <time>       config deep sleep time in minutes
-setTemp <temperature> config the panel ambient temperature
-reboot                perform a soft ESP32 reboot
-help                  display this help menu
-```
+![CPanel CLI demo](images/cli_help.jpg)
 
 Please visit the project page in [Hackaday](https://hackaday.io/project/182527-crypto-news-eink-panel) for complete details.
 
@@ -66,6 +41,7 @@ Please visit the project page in [Hackaday](https://hackaday.io/project/182527-c
 - [x] run FOTA update without change WiFi credentials
 - [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
 - [x] NTP time zone via CLI
+- [x] Migrated to new version of ESP32WifiCLI (nmcli)
 - [ ] Bluetooth alternative for set preferences
 
 ## Firmware build
@@ -77,6 +53,8 @@ pio run --target upload
 ```
 
 ## Demo
+
+!!**This demo is old but quiet close to the new CLI experience**!!  
 
 [![Crypto panel](https://raw.githubusercontent.com/hpsaturn/esp32-wifi-cli/master/images/cryptopanel_preview.jpg)](https://youtu.be/oyav6SvN870)
 
@@ -92,7 +70,19 @@ pio run --target upload
 
 ## Changelog
 
-**20230827 rev160**
+### 20241015 rev162
+
+```
+New CLI experience and setTZone, time, nmcli, wipe commands:
+  - fixed issue on volt parser on debugging
+  - set TimeZone via CLI and dependencies improvements
+  - update to the lastest ArduinoJSON library
+  - new Espressif framework ADC implementation
+  - upgraded CLI dependency and fixed cerficates issue
+``` 
+
+### 20230827 rev160
+
 ```
 Multiple changes from rev150
   - disable OTA update (Only FOTA)
@@ -105,7 +95,8 @@ Multiple changes from rev150
   - new CLI settings: setSleep, setTemp and setBase
 ```
 
-**20220713 rev153**
+### 20220713 rev153
+
 ```
 Easy firmware installer via Browser
   - added silent call for reduce verbose on serial
@@ -113,14 +104,15 @@ Easy firmware installer via Browser
   - refactor load variables and delays on epdiy
 ```
 
-**20220713 rev150**
+### 20220713 rev150
+
 ```
 Changed panel config via CLI
   - Added ESP32WifiCLI library
   - extended CLI to have a currencies configuration
 ```
 
-**20211106 rev145**
+### 20211106 rev145
 
 ```
 Added new News API and QR payload:
@@ -132,7 +124,7 @@ Added new News API and QR payload:
   - many memory improvements on QR allocation
 ``` 
 
-**20210926 rev100**
+### 20210926 rev100
 
 ```
 Added WDT, status queue msg, improved UI:
@@ -144,7 +136,7 @@ Added WDT, status queue msg, improved UI:
   - Battery level improvements for USB/Battery modes
 ```
 
-**20210925 rev089**
+### 20210925 rev089
 
 ```
 Added OTA updates (local and remote)
@@ -154,7 +146,7 @@ Added OTA updates (local and remote)
   - Added UI feedback when new OTA is arrived
 ```
 
-**20210924 rev076**
+### 20210924 rev076
 
 ```
 Migration from LilyGo forked library to vroland/epdiy repo
@@ -166,7 +158,7 @@ Migration from LilyGo forked library to vroland/epdiy repo
   - working again all with new driver, ~20 seg on init
 ```
 
-**20210922 rev039 (First version)**
+### 20210922 rev039 (First version)
 
 ```
 Added support to PlatformIO and improved code.
@@ -184,5 +176,3 @@ Added support to PlatformIO and improved code.
 - Thanks to @techiesms by first idea and [original project](https://github.com/techiesms/) for Arduino IDE
 - Thanks to @hacksics from some icons and fonts of project [HA dashboard project](https://github.com/hacksics/lilygo-t5-47-ha)
 - This project use the last version of [EPDIY driver](https://github.com/vroland/epdiy) of @vroland
-
- 
