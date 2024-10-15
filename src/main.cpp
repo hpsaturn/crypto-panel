@@ -38,7 +38,6 @@ bool inSetup;
 
 // NTP time
 tm timeinfo;
-time_t now;
 long unsigned lastNTPtime;
 unsigned long lastEntryTime;
 String timeStamp;
@@ -48,7 +47,7 @@ void logMemory() {
 }
 
 bool isConfigured() {
-    return wcli.isConfigured() && cryptosCount == 3;
+  return wcli.isConfigured() && cryptosCount == 3;
 }
 
 void title() {
@@ -175,10 +174,7 @@ void updateTimeSettings() {
 
 bool getNTPtime(int sec) {
   int sec_counter = 0;
-  while (!getLocalTime(&timeinfo) && sec_counter++ < sec) {
-    log_i(".");
-    delay(1000);
-  }
+  while (!getLocalTime(&timeinfo) && sec_counter++ < sec) delay(1000);
   if (timeinfo.tm_year <= (2016 - 1900)) return false;  // the NTP call was not successful
   char time_output[30];
   strftime(time_output, 30, "%a  %d-%m-%y %T", &timeinfo);
@@ -309,7 +305,7 @@ class mESP32WifiCLICallbacks : public ESP32WifiCLICallbacks {
 
   void onHelpShow() { printRequirements(); }
 
- void onNewWifi(String ssid, String passw) {}
+  void onNewWifi(String ssid, String passw) {}
 };
 
 void _setBase (char *args, Stream *response) {
@@ -407,7 +403,7 @@ void setupWiFiCLI(){
   wcli.add("curList", &_cryptoList, "\tlist saved cryptocurrencies");
   wcli.add("curDrop", &_cryptoDelete, "\tdelete one cryptocurrency");
   wcli.add("setBase", &_setBase, "\tset base currency (USD/EUR)");
-  wcli.add("setSleep", &_setSleep, "\tconfig deep sleep time");
+  wcli.add("setSleep", &_setSleep, "\tconfig deep sleep time in minutes");
   wcli.add("setTemp", &_setTemp, "\tconfig the panel ambient temperature");
   wcli.add("setTZone", &_setTimeZone, "\tset TZONE. https://tinyurl.com/4s44uyzn");
   wcli.add("time", &_showTime, "\t\tprint the current time"); 
@@ -418,10 +414,10 @@ void setupWiFiCLI(){
   while (!isConfigured() || BtnConfigPressed) {  // force to configure the panel.
     wcli.loop();
   }
-  if(inSetup) renderStaticContent(false);  // restore normal static content
+  if (inSetup) renderStaticContent(false);  // restore normal static content
 }
 
-void setupFlags(){
+void setupFlags() {
   listCryptos(true);  // load configured crypto currencies from flash
   BtnConfigPressed = (digitalRead(SETUP_BTN_PIN) == LOW || wakeup_by_setup_button());
   inSetup = !isConfigured() || BtnConfigPressed;
