@@ -116,3 +116,9 @@ String getString(String key, String defaultValue) {
   cfg.end();
   return out;
 }
+
+void clearSettings(){
+  cfg.begin(app_name, RW_MODE);
+  cfg.clear();
+  cfg.end();
+}

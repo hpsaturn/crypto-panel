@@ -327,6 +327,7 @@ void _setSleep(char *args, Stream *response) {
   if (sleepTime >= 5) {
     deep_sleep_time = sleepTime * 60;
     setInt(key_sleep_time, sleepTime);
+    response->printf("\r\nsleep time\t: %i minutes\r\n",sleepTime);
   } else {
     response->printf("\r\ninvalid sleep time\r\ncurrent sleep time is: %i\r\n",deep_sleep_time / 60);
     response->println("minimum sleep time is 5 minutes. Is recommended 60 minutes or more");
@@ -383,7 +384,7 @@ void _cryptoSave(char *args, Stream *response) {
 void _wipe(char *args, Stream *response) {
   response->println("Clearing device to defaults..");
   wcli.clearSettings();
-  cfg.clear();
+  clearSettings();
   response->println("done");
 }
 
