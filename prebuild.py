@@ -25,7 +25,7 @@ def publish_firmware(source, target, env):
     print("Uploading {0} to OTA server..".format(firmware_name))
     # subprocess.call(["./build", "clean"])
     subprocess.call(["cp", "%s" % firmware_path, "%s" % installer_path])
-    subprocess.call(["./build", "otatrigger"])
+    subprocess.call(["./build", "ota"])
 
 # get platformio environment variables
 env = DefaultEnvironment()
