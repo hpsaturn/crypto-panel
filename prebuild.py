@@ -43,7 +43,7 @@ flavor = str(env.get("PIOENV"))
 if flavor.find('OTA') != -1:
     flavor = flavor.replace('OTA','')
     # Custom upload command and program name
-    env.Replace(PROGNAME="canairio_%s_rev%s" % (flavor,revision), UPLOADCMD=publish_firmware)
+    env.Replace(PROGNAME="eInkCrypto_%s_rev%s" % (flavor,revision), UPLOADCMD=publish_firmware)
 
 # print ("environment:")
 # print (env.Dump())
