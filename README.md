@@ -55,6 +55,28 @@ pio run --target upload
 
 <a href="images/ethereum_donation_address.png" target="_blank" style="padding-left: 40px" ><img src="images/ethereum_donation_address.png" width="180" ></a>
 
+## TODO
+
+- [x] improve TTGO eInk library to original library
+- [x] remote OTA updates via PlatformIO and FOTA
+- [x] new API for Crypto News (RSS)
+- [x] diplay news feed and news link with a QR code
+- [x] cofigure the eInk panel via command line
+- [x] run FOTA update without change WiFi credentials
+- [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
+- [x] NTP time zone via CLI
+- [x] Migrated to new version of ESP32WifiCLI (nmcli)
+- [ ] Add second informative screen: Maybe Weather?
+- [ ] Bluetooth alternative for set preferences
+
+## Credits
+
+- This project use the [nmcli project](https://github.com/hpsaturn/esp32-wifi-cli/) and [Shellminator](https://github.com/dani007200964/Shellminator)
+- Thanks to @techiesms by first idea and [original project](https://github.com/techiesms/) for Arduino IDE
+- Thanks to @hacksics from some icons and fonts of project [HA dashboard project](https://github.com/hacksics/lilygo-t5-47-ha)
+- This project use the last version of [EPDIY driver](https://github.com/vroland/epdiy) of @vroland
+
+
 ## Changelog
 
 ### 20250124 rev163
@@ -167,24 +189,3 @@ Added support to PlatformIO and improved code.
   - deep sleep improvement with full refresh after x boots
   - Original code: https://github.com/techiesms/  
 ```
-
-## TODO
-
-- [x] improve TTGO eInk library to original library
-- [x] remote OTA updates via PlatformIO and FOTA
-- [x] new API for Crypto News (RSS)
-- [x] diplay news feed and news link with a QR code
-- [x] cofigure the eInk panel via command line
-- [x] run FOTA update without change WiFi credentials
-- [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
-- [x] NTP time zone via CLI
-- [x] Migrated to new version of ESP32WifiCLI (nmcli)
-- [ ] Add second informative screen: Maybe Weather?
-- [ ] Bluetooth alternative for set preferences
-
-## Credits
-
-- This project use the [nmcli project](https://github.com/hpsaturn/esp32-wifi-cli/) and [Shellminator](https://github.com/dani007200964/Shellminator)
-- Thanks to @techiesms by first idea and [original project](https://github.com/techiesms/) for Arduino IDE
-- Thanks to @hacksics from some icons and fonts of project [HA dashboard project](https://github.com/hacksics/lilygo-t5-47-ha)
-- This project use the last version of [EPDIY driver](https://github.com/vroland/epdiy) of @vroland
