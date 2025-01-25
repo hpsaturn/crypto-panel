@@ -9,7 +9,7 @@ LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 ## Features
 
 - Panel installation and configuration via an easy [Web installer](https://hpsaturn.com/crypto-panel-installer/)
-- Configuration via command line (CLI) with the console of the web installer
+- Configuration via command line (CLI) using builtin console on the web installer
 - Support hundreds of coins from [Coingecko API](https://api.coingecko.com/api/v3/coins/list?include_platform=false)
 - Random cryptocurrencies news from Cointelegrah and others news portals
 - The coin news are follow via QR code
@@ -21,7 +21,7 @@ LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
 
 ## Firmware install
 
-You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/). Also you can follow the next [video guide](#demo) or follow the instruccions on the [Hackaday](https://hackaday.io/project/182527-crypto-panel) project page that using this web installer.
+You able to install this firmware on only one click, without compiling nothing only using this [Web installer](https://hpsaturn.com/crypto-panel-installer/). Also you can follow the full instruccions and steps on the [Hackaday Instructions Section](https://hackaday.io/project/182527/instructions).
 
 ## Panel config
 
@@ -29,7 +29,7 @@ After the boot or first restart, please enter via serial console or terminal and
 
 ![CPanel CLI demo](images/cli_help.jpg)
 
-Please visit the project page in [Hackaday](https://hackaday.io/project/182527-crypto-news-eink-panel) for complete details.
+Please visit the [project page](https://hackaday.io/project/182527-crypto-news-eink-panel) and its full instruccions and steps on the [Hackaday Instructions Section](https://hackaday.io/project/182527/instructions) for complete details.
 
 ## TODO
 
@@ -56,7 +56,8 @@ pio run --target upload
 
 !!**This demo is old but quiet close to the new CLI experience**!!  
 
-[![Crypto panel](https://raw.githubusercontent.com/hpsaturn/esp32-wifi-cli/master/images/cryptopanel_preview.jpg)](https://youtu.be/oyav6SvN870)
+[![Crypto panel](https://raw.githubusercontent.com/hpsaturn/esp32-wifi-cli/master/images/cryptopanel_preview.jpg)](https://youtu.be/oyav6SvN870)  
+(deprecated)
 
 ## Donations
 
@@ -70,20 +71,31 @@ pio run --target upload
 
 ## Changelog
 
+
+### 20250124 rev163
+
+```shell
+Improved CLI manager using the new shell of NetworkManager CLI library
+  - New deploy tool for official OTA updates
+  - Fixed issue with DEBUG_LEVEL5 parser for double
+  - Fixed issues on Python version on CI actions
+    v0.2.1 released on Web installer and OTA channel
+```
+
 ### 20241015 rev162
 
-```
+```shell
 New CLI experience and setTZone, time, nmcli, wipe commands:
   - fixed issue on volt parser on debugging
   - set TimeZone via CLI and dependencies improvements
   - update to the lastest ArduinoJSON library
   - new Espressif framework ADC implementation
   - upgraded CLI dependency and fixed cerficates issue
-``` 
+```
 
 ### 20230827 rev160
 
-```
+```shell
 Multiple changes from rev150
   - disable OTA update (Only FOTA)
   - removed old NTP client library instead ESP32 internal client
@@ -97,7 +109,7 @@ Multiple changes from rev150
 
 ### 20220713 rev153
 
-```
+```shell
 Easy firmware installer via Browser
   - added silent call for reduce verbose on serial
   - added web installer section and updated documentation
@@ -106,7 +118,7 @@ Easy firmware installer via Browser
 
 ### 20220713 rev150
 
-```
+```shell
 Changed panel config via CLI
   - Added ESP32WifiCLI library
   - extended CLI to have a currencies configuration
@@ -114,7 +126,7 @@ Changed panel config via CLI
 
 ### 20211106 rev145
 
-```
+```shell
 Added new News API and QR payload:
 
   - News API migrated to real server 
@@ -122,11 +134,11 @@ Added new News API and QR payload:
   - first version with API for get QR link of news
   - added reboot method and improved global config
   - many memory improvements on QR allocation
-``` 
+```
 
 ### 20210926 rev100
 
-```
+```shell
 Added WDT, status queue msg, improved UI:
 
   - Fast main update on each partial refresh
@@ -138,7 +150,7 @@ Added WDT, status queue msg, improved UI:
 
 ### 20210925 rev089
 
-```
+```shell
 Added OTA updates (local and remote)
 
   - Python tool for deployment via PlatformIO
@@ -148,7 +160,7 @@ Added OTA updates (local and remote)
 
 ### 20210924 rev076
 
-```
+```shell
 Migration from LilyGo forked library to vroland/epdiy repo
 
   - works fine with USB, with battery sometimes fails
@@ -160,7 +172,7 @@ Migration from LilyGo forked library to vroland/epdiy repo
 
 ### 20210922 rev039 (First version)
 
-```
+```shell
 Added support to PlatformIO and improved code.
 
   - improved speed adding a RTOS task for eINK static tasks
@@ -169,7 +181,7 @@ Added support to PlatformIO and improved code.
   - added battery level and reset detection for full refresh
   - deep sleep improvement with full refresh after x boots
   - Original code: https://github.com/techiesms/  
-``` 
+```
 
 ## Credits
 
