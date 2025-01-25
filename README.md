@@ -31,19 +31,6 @@ After the boot or first restart, please enter via serial console or terminal and
 
 Please visit the [project page](https://hackaday.io/project/182527-crypto-news-eink-panel) and its full instruccions and steps on the [Hackaday Instructions Section](https://hackaday.io/project/182527/instructions) for complete details.
 
-## TODO
-
-- [x] improve TTGO eInk library to original library
-- [x] remote OTA updates via PlatformIO and FOTA
-- [x] new API for Crypto News (RSS)
-- [x] diplay news feed and news link with a QR code
-- [x] cofigure the eInk panel via command line
-- [x] run FOTA update without change WiFi credentials
-- [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
-- [x] NTP time zone via CLI
-- [x] Migrated to new version of ESP32WifiCLI (nmcli)
-- [ ] Bluetooth alternative for set preferences
-
 ## Firmware build
 
 Please install first [PlatformIO](http://platformio.org/) open source ecosystem for IoT development compatible with **Arduino** IDE and its command line tools (Windows, MacOs and Linux). Also, you may need to install [git](http://git-scm.com/) in your system.
@@ -67,7 +54,6 @@ pio run --target upload
 - Inviting me **a coffee**: [buymeacoffee](https://www.buymeacoffee.com/hpsaturn), [Sponsors](https://github.com/sponsors/hpsaturn?frequency=one-time)
 
 <a href="images/ethereum_donation_address.png" target="_blank" style="padding-left: 40px" ><img src="images/ethereum_donation_address.png" width="180" ></a>
-
 
 ## Changelog
 
@@ -181,6 +167,20 @@ Added support to PlatformIO and improved code.
   - deep sleep improvement with full refresh after x boots
   - Original code: https://github.com/techiesms/  
 ```
+
+## TODO
+
+- [x] improve TTGO eInk library to original library
+- [x] remote OTA updates via PlatformIO and FOTA
+- [x] new API for Crypto News (RSS)
+- [x] diplay news feed and news link with a QR code
+- [x] cofigure the eInk panel via command line
+- [x] run FOTA update without change WiFi credentials
+- [x] New [Web installer](https://hpsaturn.com/crypto-panel-installer/)
+- [x] NTP time zone via CLI
+- [x] Migrated to new version of ESP32WifiCLI (nmcli)
+- [ ] Add second informative screen: Maybe Weather?
+- [ ] Bluetooth alternative for set preferences
 
 ## Credits
 
