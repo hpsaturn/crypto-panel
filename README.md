@@ -2,7 +2,7 @@
 
 # Crypto Panel
 
-LilyGo EDP47 ESP32 cryptocurrency panel, News and Tracker.
+ESP32-Powered eInk Panel for Cryptocurrency Updates and News, using a LilyGo EDP47 board.
 
 ![preview](images/photo.jpg)
 
@@ -75,13 +75,19 @@ pio run --target upload
 - Thanks to @techiesms by first idea and [original project](https://github.com/techiesms/) for Arduino IDE
 - Thanks to @hacksics from some icons and fonts of project [HA dashboard project](https://github.com/hacksics/lilygo-t5-47-ha)
 - This project use the last version of [EPDIY driver](https://github.com/vroland/epdiy) of @vroland
-
+- [Random Nerd Tutorials](https://randomnerdtutorials.com/esp32-https-requests/) and [@jcomas](https://github.com/jcomas) for the `setInsecure` proposal for remove the rootCACertificates dependency
 
 ## Changelog
 
+### 20250604 rev164
+
+```
+Removed rootCACertificates dependency.
+```
+
 ### 20250124 rev163
 
-```shell
+```
 Improved CLI manager using the new shell of NetworkManager CLI library
   - New deploy tool for official OTA updates
   - Fixed issue with DEBUG_LEVEL5 parser for double
