@@ -1,12 +1,9 @@
 // ----------------------------
 // Functions used to download data from coingecko retrieve are separated in this file
 // ----------------------------
-#include "chain_pem.h"
 
 HTTPClient http;
 WiFiClientSecure client;
-
-const char* coingeckoSslFingerprint = "8925605d5044fcc0852b98d7d3665228684de6e2";
 
 struct SpiRamAllocator : ArduinoJson::Allocator {
   void* allocate(size_t size) {
@@ -52,9 +49,8 @@ void stopClient() {
 }
 
 bool downloadBtcAndEthPrice() {
-  // client.setFingerprint(coingeckoSslFingerprint);
   http.useHTTP10(true);
-  client.setCACert(rootCACertificate);
+  client.setInsecure();
 
   String apiUrl = "https://api.coingecko.com/api/v3/simple/price?ids=" + combineCryptoCurrencies() + "&vs_currencies=btc%2Ceth";
 
@@ -104,8 +100,7 @@ bool downloadBtcAndEthPrice() {
 
 bool downloadBaseData(String vsCurrency) {
   http.useHTTP10(true);
-  client.setCACert(rootCACertificate);
-  // client.setFingerprint(coingeckoSslFingerprint);
+  client.setInsecure();
 
   String apiUrl = "https://api.coingecko.com/api/v3/coins/markets?vs_currency=" + vsCurrency + "&ids=" + combineCryptoCurrencies() + "&order=market_cap_desc&per_page=100&page=1&sparkline=false&price_change_percentage=24h%2C7d";
 
@@ -168,11 +163,11 @@ bool downloadBaseData(String vsCurrency) {
 
 bool downloadNewsData() {
   http.useHTTP10(true);
-  WiFiClient client;
+  client.setInsecure();
 
-  String apiUrl = "http://crypto.hpsaturn.com:8080/posts";
+  String apiUrl = "https://crypto.hpsaturn.com/posts";
 
-  // Serial.println("[cAPI] target news: " + apiUrl);
+  log_i("[cAPI] target: %s",apiUrl.c_str());
 
   http.begin(client, apiUrl);
 
